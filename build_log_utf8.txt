@@ -1,0 +1,4 @@
+﻿
+> auth-api@2.0.0 build
+> tsc
+

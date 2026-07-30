@@ -1,0 +1,182 @@
+PropertyLa Backend Documentation
+================================
+
+Overview
+--------
+This repository contains the PropertyLa backend API.
+
+The backend handles authentication, users, property data, property uploads,
+notifications, contact messages, property advisor matching, property-fit lead
+creation, email sending, and server side validation.
+
+
+Technology
+----------
+Main stack:
+  Node.js
+  Express
+  TypeScript
+  TypeORM
+  PostgreSQL
+  JWT authentication
+  Nodemailer/Resend email support
+  Multer/Sharp upload handling
+
+
+Important Folders
+-----------------
+src/routes
+  Express route definitions.
+
+src/controllers
+  Request and response handlers.
+
+src/services
+  Business logic for authentication, property handling, property advisor,
+  notification, upload, and email features.
+
+src/repositories
+  Database access helpers.
+
+src/entities
+  TypeORM entity definitions.
+
+src/middleware
+  Express middleware such as authentication.
+
+src/config
+  Database and ORM configuration.
+
+dist
+  Compiled JavaScript output generated from TypeScript.
+
+
+Property Advisor Contact Validation
+-----------------------------------
+Main file:
+  src/services/propertyFitService.ts
+
+Affected endpoints:
+  POST /api/properties/fit/matches
+  POST /api/properties/fit/lead
+  POST /api/properties/fit/view
+  POST /api/properties/:id/view
+
+Validation rules:
+  Empty phone + empty email = request can continue without contact.
+  Phone entered + email empty = invalid.
+  Email entered + phone empty = invalid.
+  Phone entered + email entered = both must be valid.
+
+Phone number rule:
+  Phone must be a valid Malaysia phone number.
+
+Accepted examples:
+  0123456789
+  60123456789
+  +60123456789
+
+Rejected example:
+  2424242
+
+Email rule:
+  Email must use a valid email format when provided.
+
+Invalid data behavior:
+  The API returns HTTP 400 with a clear validation message.
+
+
+Main Routes
+-----------
+Authentication:
+  src/routes/authRoutes.ts
+
+Properties:
+  src/routes/propertyRoutes.ts
+
+Contact:
+  src/routes/contactRoutes.ts
+
+Notifications:
+  src/routes/notificationRoutes.ts
+
+Uploads:
+  src/routes/imageUploadRoutes.ts
+  src/routes/uploadsRoutes.ts
+
+Users:
+  src/routes/userRoutes.ts
+
+
+Development
+-----------
+Install dependencies:
+  npm install
+
+Start local development server:
+  npm run dev
+
+Build TypeScript:
+  npm run build
+
+Typical development behavior:
+  TypeScript is compiled into dist.
+  The server runs with node --watch against compiled output.
+  Uses .env for local backend environment variables.
+  Database, email, storage, CORS, and client URLs may point to local or test
+  services.
+  Logs are useful for debugging.
+
+
+Production
+----------
+Build the backend:
+  npm run build
+
+Start production backend:
+  npm run start
+
+Typical production behavior:
+  Runs compiled JavaScript from dist.
+  Uses production environment variables.
+  Database should point to the production database.
+  Email settings should point to the production email provider.
+  Public client URL and CORS settings should point to the production frontend.
+  Upload/storage settings should point to production-safe storage.
+  Should not depend on localhost or local-only configuration.
+
+
+Useful Commands
+---------------
+npm run build
+  Compile TypeScript into dist.
+
+npm run start
+  Start the compiled production backend from dist/start.js.
+
+npm run dev
+  Build and start the backend with node --watch.
+
+npm run test
+  Run the existing API test script.
+
+
+Environment Notes
+-----------------
+Backend configuration usually comes from .env.
+
+Common environment concerns:
+  Database connection settings
+  JWT secret
+  Email provider settings
+  Public client URL
+  Upload/storage settings
+  CORS configuration
+
+
+Notes
+-----
+Backend validation protects the API from invalid direct requests. Frontend
+validation exists for fast user feedback, but the backend remains the final
+source of truth for accepted data.
+
