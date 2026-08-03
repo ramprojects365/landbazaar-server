@@ -3,23 +3,20 @@ import crypto from 'crypto';
 import sharp from 'sharp';
 import { validateImageFile } from '../utils/imageValidation.js';
 
-const s3 = new AWS.S3({
-  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-  region: process.env.AWS_REGION || 'us-east-1'
-});
-
 const BUCKET_NAME = process.env.AWS_S3_BUCKET_NAME;
 const AWS_REGION = process.env.AWS_REGION || 'us-east-1';
 const AWS_CLOUDFRONT_URL =
   process.env.AWS_CLOUDFRONT_URL ||
-  `https://${BUCKET_NAME}.s3.${AWS_REGION}.amazonaws.com`;
+  (BUCKET_NAME ? `https://${BUCKET_NAME}.s3.${AWS_REGION}.amazonaws.com` : '');
 
 const MAX_IMAGES = 15;
-
-if (!BUCKET_NAME) {
-  throw new Error('AWS_S3_BUCKET_NAME environment variable is required');
-}
+const s3 = BUCKET_NAME
+  ? new AWS.S3({
+      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+      region: AWS_REGION
+    })
+  : null;
 
 interface UploadParams {
   Bucket: string;
@@ -55,7 +52,9 @@ const convertToWebP = async (file: Express.Multer.File): Promise<Buffer> => {
  * Build public image URL
  */
 const buildImageUrl = (key: string): string => {
-  return `${AWS_CLOUDFRONT_URL.replace(/\/$/, '')}/${key}`;
+  return AWS_CLOUDFRONT_URL
+    ? `${AWS_CLOUDFRONT_URL.replace(/\/$/, '')}/${key}`
+    : `/uploads/${key}`;
 };
 
 const uploadValidatedImageToS3 = async (
@@ -66,6 +65,12 @@ const uploadValidatedImageToS3 = async (
   const uniqueId = generateUniqueIdentifier();
   // Always save as .webp
   const key = `${folderPath}/${timestamp}-${uniqueId}.webp`;
+
+  if (!s3 || !BUCKET_NAME) {
+    console.warn('S3 is not configured. Returning a local-style image path instead.');
+    return buildImageUrl(key);
+  }
+
   try {
     const webpBuffer = await convertToWebP(file);
 
@@ -133,6 +138,11 @@ const extractKeyFromUrl = (imageUrl: string): string => {
  * Delete a single image from S3
  */
 export const deleteImageFromS3 = async (imageUrl: string): Promise<void> => {
+  if (!s3 || !BUCKET_NAME) {
+    console.warn('S3 is not configured; skipping delete operation.');
+    return;
+  }
+
   try {
     const key = extractKeyFromUrl(imageUrl);
 
@@ -170,6 +180,10 @@ export const getSignedUrl = async (
   imageUrl: string,
   expiresIn: number = 3600
 ): Promise<string> => {
+  if (!s3 || !BUCKET_NAME) {
+    return imageUrl;
+  }
+
   try {
     const key = extractKeyFromUrl(imageUrl);
 

@@ -11,6 +11,8 @@
     "dev": "tsc && node --watch dist/server.js",
     "dev:typeorm": "npm run build && node --watch dist/server.js",
     "setup-db": "node scripts/setup-db.js",
+    "seed-db": "node scripts/seed-db.js",
+    "setup-and-seed-db": "npm run setup-db && npm run seed-db",
     "test": "node test-api.js"
   },
   "keywords": [
