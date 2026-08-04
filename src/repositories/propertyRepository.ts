@@ -4,7 +4,7 @@ import { AppError } from '../utils/errors.js';
 import { FindOptionsWhere, ILike, MoreThanOrEqual, LessThanOrEqual, Equal } from 'typeorm';
 
 export interface PropertyFilters {
-  listingType?: 'rent' | 'sale';
+  listingType?: string;
   propertyType?: string;
   tenure?: 'freehold' | 'leasehold';
   furnishing?: 'Fully' | 'Partially' | 'Unfurnished';
@@ -224,6 +224,7 @@ export interface SearchFilters {
   type?: string;
   city?: string;
   propertyName?: string;
+  propertyType?: string;
 }
 
 export const searchProperties = async (filters: SearchFilters): Promise<Property[]> => {
@@ -267,6 +268,11 @@ export const searchProperties = async (filters: SearchFilters): Promise<Property
   if (filters.propertyName) {
     conditions.push('(property.title ILIKE :propertyName OR property.propertyName ILIKE :propertyName)');
     params.propertyName = `%${filters.propertyName}%`;
+  }
+
+  if (filters.propertyType) {
+    conditions.push('property.propertyType ILIKE :propertyType');
+    params.propertyType = `%${filters.propertyType}%`;
   }
 
   if (conditions.length > 0) {

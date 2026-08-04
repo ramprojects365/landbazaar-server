@@ -16,8 +16,8 @@ const validatePropertyData = (data: Partial<Property>): void => {
     throw new AppError('Description cannot be empty', 400);
   }
 
-  if (data.listingType && !['rent', 'sale'].includes(data.listingType)) {
-    throw new AppError('Listing type must be either "rent" or "sale"', 400);
+  if (data.listingType && !['rent', 'sale', 'lease'].includes(data.listingType)) {
+    throw new AppError('Listing type must be either "sale" or "lease"', 400);
   }
 
   if (data.furnishing && !['Fully', 'Partially', 'Unfurnished'].includes(data.furnishing)) {
@@ -198,8 +198,8 @@ export const deleteProperty = async (propertyId: string, userId: string): Promis
   return updated;
 };
 
-export const searchProperties = async (filters: { q?: string; type?: string; city?: string; propertyName?: string }): Promise<Property[]> => {
-  const hasFilter = filters.q || filters.type || filters.city || filters.propertyName;
+export const searchProperties = async (filters: { q?: string; type?: string; city?: string; propertyName?: string; propertyType?: string }): Promise<Property[]> => {
+  const hasFilter = filters.q || filters.type || filters.city || filters.propertyName || filters.propertyType;
   if (!hasFilter) {
     throw new AppError('At least one search filter is required', 400);
   }
