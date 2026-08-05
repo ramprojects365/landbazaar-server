@@ -15,4 +15,3 @@ router.put('/:id', authenticateToken, propertyController.updateProperty);
 router.patch('/:id', authenticateToken, propertyController.updateProperty);
 router.delete('/:id', authenticateToken, propertyController.deleteProperty);
 export default router;
-//# sourceMappingURL=propertyRoutes.js.map

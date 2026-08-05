@@ -9,12 +9,19 @@ const s3 = new AWS.S3({
 });
 const BUCKET_NAME = process.env.AWS_S3_BUCKET_NAME;
 const AWS_REGION = process.env.AWS_REGION || 'us-east-1';
-const AWS_CLOUDFRONT_URL = process.env.AWS_CLOUDFRONT_URL ||
-    `https://${BUCKET_NAME}.s3.${AWS_REGION}.amazonaws.com`;
+const AWS_CLOUDFRONT_URL = process.env.AWS_CLOUDFRONT_URL;
 const MAX_IMAGES = 15;
-if (!BUCKET_NAME) {
-    throw new Error('AWS_S3_BUCKET_NAME environment variable is required');
-}
+let warnedMissingS3Config = false;
+const getBucketName = () => {
+    if (!BUCKET_NAME) {
+        if (!warnedMissingS3Config) {
+            console.warn('S3 upload is not configured. Set AWS_S3_BUCKET_NAME to enable image upload.');
+            warnedMissingS3Config = true;
+        }
+        throw new Error('Image upload is not configured on this server. Please set AWS_S3_BUCKET_NAME.');
+    }
+    return BUCKET_NAME;
+};
 /**
  * Generate a unique file identifier
  */
@@ -39,10 +46,13 @@ const convertToWebP = async (file) => {
 /**
  * Build public image URL
  */
-const buildImageUrl = (key) => {
-    return `${AWS_CLOUDFRONT_URL.replace(/\/$/, '')}/${key}`;
+const buildImageUrl = (key, bucketName) => {
+    const publicBaseUrl = AWS_CLOUDFRONT_URL ||
+        `https://${bucketName}.s3.${AWS_REGION}.amazonaws.com`;
+    return `${publicBaseUrl.replace(/\/$/, '')}/${key}`;
 };
 const uploadValidatedImageToS3 = async (file, folderPath = 'uploads') => {
+    const bucketName = getBucketName();
     const timestamp = Date.now();
     const uniqueId = generateUniqueIdentifier();
     // Always save as .webp
@@ -50,13 +60,13 @@ const uploadValidatedImageToS3 = async (file, folderPath = 'uploads') => {
     try {
         const webpBuffer = await convertToWebP(file);
         const params = {
-            Bucket: BUCKET_NAME,
+            Bucket: bucketName,
             Key: key,
             Body: webpBuffer,
             ContentType: 'image/webp'
         };
         await s3.upload(params).promise();
-        return buildImageUrl(key);
+        return buildImageUrl(key, bucketName);
     }
     catch (error) {
         console.error('S3 upload error:', error);
@@ -102,9 +112,10 @@ const extractKeyFromUrl = (imageUrl) => {
  */
 export const deleteImageFromS3 = async (imageUrl) => {
     try {
+        const bucketName = getBucketName();
         const key = extractKeyFromUrl(imageUrl);
         const params = {
-            Bucket: BUCKET_NAME,
+            Bucket: bucketName,
             Key: key
         };
         await s3.deleteObject(params).promise();
@@ -132,9 +143,10 @@ export const deleteMultipleImagesFromS3 = async (imageUrls) => {
  */
 export const getSignedUrl = async (imageUrl, expiresIn = 3600) => {
     try {
+        const bucketName = getBucketName();
         const key = extractKeyFromUrl(imageUrl);
         const signedUrl = s3.getSignedUrl('getObject', {
-            Bucket: BUCKET_NAME,
+            Bucket: bucketName,
             Key: key,
             Expires: expiresIn
         });
@@ -145,4 +157,3 @@ export const getSignedUrl = async (imageUrl, expiresIn = 3600) => {
         throw new Error(`Failed to generate signed URL: ${error}`);
     }
 };
-//# sourceMappingURL=s3UploadService.js.map

@@ -154,4 +154,3 @@ User = __decorate([
     Entity('users')
 ], User);
 export { User };
-//# sourceMappingURL=User.js.map

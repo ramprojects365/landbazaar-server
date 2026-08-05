@@ -610,4 +610,3 @@ export const createOrLoginPropertyFitLead = async (req, res) => {
         }
     }
 };
-//# sourceMappingURL=propertyController.js.map

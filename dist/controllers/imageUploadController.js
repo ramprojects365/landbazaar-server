@@ -82,4 +82,3 @@ export const deleteImage = async (req, res) => {
         });
     }
 };
-//# sourceMappingURL=imageUploadController.js.map

@@ -47,4 +47,3 @@ export const markAllNotificationsRead = async (recipientId) => {
     const result = await repository.update({ recipientId, isRead: false }, { isRead: true });
     return result.affected ?? 0;
 };
-//# sourceMappingURL=notificationRepository.js.map

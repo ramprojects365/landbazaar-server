@@ -4,4 +4,3 @@ export const generateOTP = (length = 6) => {
     const value = crypto.randomInt(0, max);
     return value.toString().padStart(length, '0');
 };
-//# sourceMappingURL=otp.js.map

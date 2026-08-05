@@ -36,4 +36,3 @@ export class DuplicateError extends AppError {
         super(`${field} already exists`, 400);
     }
 }
-//# sourceMappingURL=errors.js.map

@@ -8,4 +8,3 @@ router.post('/upload-multiple', authenticateToken, upload.array('images', MAX_IM
 router.post('/upload-single', upload.single('images'), imageUploadController.uploadSingleImage);
 router.delete('/delete', authenticateToken, imageUploadController.deleteImage);
 export default router;
-//# sourceMappingURL=imageUploadRoutes.js.map

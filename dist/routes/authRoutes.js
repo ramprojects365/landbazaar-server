@@ -99,4 +99,3 @@ router.post('/reset-password', [
         .withMessage('Password must contain uppercase, lowercase and number')
 ], resetPassword);
 export default router;
-//# sourceMappingURL=authRoutes.js.map

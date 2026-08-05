@@ -41,4 +41,3 @@ export const initializeDatabase = async () => {
         throw error;
     }
 };
-//# sourceMappingURL=ormconfig.js.map

@@ -274,4 +274,3 @@ export const verifyOTP = async (req, res) => {
         });
     }
 };
-//# sourceMappingURL=authController.js.map

@@ -99,4 +99,3 @@ export const uploadProfileImage = async (req, res) => {
         res.status(500).json({ success: false, message: error.message || 'Internal server error' });
     }
 };
-//# sourceMappingURL=userController.js.map

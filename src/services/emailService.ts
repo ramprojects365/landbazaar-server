@@ -1,10 +1,20 @@
 import { Resend } from "resend";
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resendApiKey = process.env.RESEND_API_KEY?.trim();
+const resend = resendApiKey ? new Resend(resendApiKey) : null;
+let warnedMissingResendKey = false;
 
 const sendEmail = async (
-  payload: Parameters<typeof resend.emails.send>[0],
+  payload: Parameters<Resend['emails']['send']>[0],
   label: string
 ): Promise<void> => {
+  if (!resend) {
+    if (!warnedMissingResendKey) {
+      console.warn('RESEND_API_KEY is not set. Email sending is disabled.');
+      warnedMissingResendKey = true;
+    }
+    return;
+  }
+
   const result = await resend.emails.send(payload);
 
   if (result.error) {

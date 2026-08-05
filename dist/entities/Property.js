@@ -370,4 +370,3 @@ Property = __decorate([
     Entity('properties')
 ], Property);
 export { Property };
-//# sourceMappingURL=Property.js.map

@@ -7,4 +7,3 @@ router.get('/unread-count', authenticateToken, notificationController.getUnreadC
 router.patch('/read-all', authenticateToken, notificationController.markAllNotificationsRead);
 router.patch('/:id/read', authenticateToken, notificationController.markNotificationRead);
 export default router;
-//# sourceMappingURL=notificationRoutes.js.map

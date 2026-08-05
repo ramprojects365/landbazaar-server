@@ -47,4 +47,3 @@ export const deleteFromSpaces = async (fileUrl) => {
 export const deleteMultipleFromSpaces = async (fileUrls) => {
     return await s3Service.deleteMultipleImagesFromS3(fileUrls);
 };
-//# sourceMappingURL=imageUploadService.js.map

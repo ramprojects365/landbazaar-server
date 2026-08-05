@@ -48,4 +48,3 @@ export const authenticateToken = async (req, res, next) => {
         });
     }
 };
-//# sourceMappingURL=auth.js.map

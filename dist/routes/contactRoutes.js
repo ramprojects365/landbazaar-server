@@ -53,4 +53,3 @@ router.post('/', async (req, res) => {
     }
 });
 export default router;
-//# sourceMappingURL=contactRoutes.js.map

@@ -149,4 +149,3 @@ export const searchProperties = async (filters) => {
     }
     return await propertyRepository.searchProperties(filters);
 };
-//# sourceMappingURL=propertyService.js.map

@@ -83,4 +83,3 @@ export const markNotificationRead = async (notificationId, userId) => {
 export const markAllNotificationsRead = async (userId) => {
     return await notificationRepository.markAllNotificationsRead(userId);
 };
-//# sourceMappingURL=notificationService.js.map

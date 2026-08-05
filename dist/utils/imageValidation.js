@@ -61,4 +61,3 @@ const formatBytes = (bytes) => {
     const megabytes = bytes / (1024 * 1024);
     return `${Number.isInteger(megabytes) ? megabytes : megabytes.toFixed(1)}MB`;
 };
-//# sourceMappingURL=imageValidation.js.map

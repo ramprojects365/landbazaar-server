@@ -74,4 +74,3 @@ Notification = __decorate([
     Entity('notifications')
 ], Notification);
 export { Notification };
-//# sourceMappingURL=Notification.js.map

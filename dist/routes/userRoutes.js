@@ -38,4 +38,3 @@ router.put('/profile', authenticateToken, profileValidation, updateProfile);
 router.patch('/profile', authenticateToken, profileValidation, updateProfile);
 router.post('/profile/image', authenticateToken, avatarUpload.single('profileImage'), uploadProfileImage);
 export default router;
-//# sourceMappingURL=userRoutes.js.map

@@ -1,0 +1,27 @@
+{
+  "info": {
+    "name": "LandBazar Create User",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Register User",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:3008/api/auth/register"
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"postmanuser\",\n  \"email\": \"postman.user@example.com\",\n  \"phone_number\": \"+919900001111\",\n  \"password\": \"ram123\"\n}"
+        }
+      }
+    }
+  ]
+}

@@ -30,4 +30,3 @@ export const ALL_AMENITIES = {
     facilities: FACILITIES_AMENITIES,
     security: SECURITY_AMENITIES
 };
-//# sourceMappingURL=amenities.js.map

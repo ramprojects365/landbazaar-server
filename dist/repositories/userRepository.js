@@ -184,4 +184,3 @@ export const getProfileImage = async (userId) => {
     });
     return user?.profileImage ?? null;
 };
-//# sourceMappingURL=userRepository.js.map

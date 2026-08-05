@@ -194,4 +194,3 @@ export const countPropertiesByUser = async (userId) => {
         where: { userId, status: 'active' }
     });
 };
-//# sourceMappingURL=propertyRepository.js.map
