@@ -124,6 +124,9 @@ type PropertyBodyField = keyof Pick<
   | 'price'
   | 'buildupArea'
   | 'landSize'
+  | 'areaUnit'
+  | 'pricePerUnit'
+  | 'totalPrice'
   | 'latitude'
   | 'longitude'
   | 'bedrooms'
@@ -132,6 +135,16 @@ type PropertyBodyField = keyof Pick<
   | 'yearOfCompletion'
   | 'carParkAllocation'
   | 'facingDirection'
+  | 'cornerPlot'
+  | 'roadWidth'
+  | 'surveyNumber'
+  | 'approvalTypes'
+  | 'soilType'
+  | 'clearTitle'
+  | 'loanFacility'
+  | 'registrationReady'
+  | 'contactPersonName'
+  | 'contactNumber'
   | 'renovationStatus'
   | 'depositAmount'
   | 'minimumRentalPeriod'
@@ -167,6 +180,9 @@ const propertyBodyKeys: Record<PropertyBodyField, string[]> = {
   price: ['price'],
   buildupArea: ['buildupArea', 'buildup_area'],
   landSize: ['landSize', 'land_size'],
+  areaUnit: ['areaUnit', 'area_unit'],
+  pricePerUnit: ['pricePerUnit', 'price_per_unit'],
+  totalPrice: ['totalPrice', 'total_price'],
   latitude: ['latitude'],
   longitude: ['longitude'],
   bedrooms: ['bedrooms'],
@@ -175,6 +191,16 @@ const propertyBodyKeys: Record<PropertyBodyField, string[]> = {
   yearOfCompletion: ['yearOfCompletion', 'year_of_completion'],
   carParkAllocation: ['carParkAllocation', 'car_park_allocation'],
   facingDirection: ['facingDirection', 'facing_direction'],
+  cornerPlot: ['cornerPlot', 'corner_plot'],
+  roadWidth: ['roadWidth', 'road_width'],
+  surveyNumber: ['surveyNumber', 'survey_number'],
+  approvalTypes: ['approvalTypes', 'approval_types'],
+  soilType: ['soilType', 'soil_type'],
+  clearTitle: ['clearTitle', 'clear_title'],
+  loanFacility: ['loanFacility', 'loan_facility'],
+  registrationReady: ['registrationReady', 'registration_ready'],
+  contactPersonName: ['contactPersonName', 'contact_person_name'],
+  contactNumber: ['contactNumber', 'contact_number'],
   renovationStatus: ['renovationStatus', 'renovation_status'],
   depositAmount: ['depositAmount', 'deposit_amount'],
   minimumRentalPeriod: ['minimumRentalPeriod', 'minimum_rental_period'],
@@ -217,12 +243,22 @@ const buildPropertyPayload = (
     'pincode',
     'landmark',
     'location',
+    'areaUnit',
     'furnishing',
     'availability',
     'floorLevel',
     'floorPlan',
     'carParkAllocation',
     'facingDirection',
+    'cornerPlot',
+    'roadWidth',
+    'surveyNumber',
+    'soilType',
+    'clearTitle',
+    'loanFacility',
+    'registrationReady',
+    'contactPersonName',
+    'contactNumber',
     'renovationStatus',
     'minimumRentalPeriod',
     'petPolicy',
@@ -285,6 +321,12 @@ const buildPropertyPayload = (
   const landSize = parseOptionalFloat(getBodyValue(body, 'landSize'));
   if (landSize !== undefined) propertyData.landSize = landSize;
 
+  const pricePerUnit = parseOptionalFloat(getBodyValue(body, 'pricePerUnit'));
+  if (pricePerUnit !== undefined) propertyData.pricePerUnit = pricePerUnit;
+
+  const totalPrice = parseOptionalFloat(getBodyValue(body, 'totalPrice'));
+  if (totalPrice !== undefined) propertyData.totalPrice = totalPrice;
+
   const depositAmount = parseOptionalFloat(getBodyValue(body, 'depositAmount'));
   if (depositAmount !== undefined) propertyData.depositAmount = depositAmount;
 
@@ -311,6 +353,14 @@ const buildPropertyPayload = (
 
   const yearOfCompletion = parseOptionalInteger(getBodyValue(body, 'yearOfCompletion'));
   if (yearOfCompletion !== undefined) propertyData.yearOfCompletion = yearOfCompletion;
+
+  const approvalTypes = getBodyValue(body, 'approvalTypes');
+  if (Array.isArray(approvalTypes)) {
+    propertyData.approvalTypes = approvalTypes
+      .filter((item): item is string => typeof item === 'string')
+      .map((item) => item.trim())
+      .filter(Boolean);
+  }
 
   if (options.userId) {
     propertyData.userId = options.userId;
@@ -399,7 +449,7 @@ export const getPropertyById = async (req: Request, res: Response): Promise<void
 export const getAllProperties = async (req: Request, res: Response): Promise<void> => {
   try {
     const filters = {
-      listingType: req.query.listingType as 'rent' | 'sale' | undefined,
+      listingType: req.query.listingType as string | undefined,
       propertyType: req.query.propertyType as string | undefined,
       tenure: req.query.tenure as 'freehold' | 'leasehold' | undefined,
       furnishing: req.query.furnishing as 'Fully' | 'Partially' | 'Unfurnished' | undefined,
@@ -578,14 +628,15 @@ export const searchProperties = async (req: Request, res: Response): Promise<voi
     const type = req.query.type as string | undefined;
     const city = req.query.city as string | undefined;
     const propertyName = req.query.propertyName as string | undefined;
+    const propertyType = req.query.propertyType as string | undefined;
 
-    const filters = { q, type, city, propertyName };
-    const hasFilter = q || type || city || propertyName;
+    const filters = { q, type, city, propertyName, propertyType };
+    const hasFilter = q || type || city || propertyName || propertyType;
 
     if (!hasFilter) {
       res.status(400).json({
         success: false,
-        message: 'At least one filter (q, type, city, or propertyName) is required'
+        message: 'At least one filter (q, type, city, propertyType, or propertyName) is required'
       });
       return;
     }

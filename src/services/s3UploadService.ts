@@ -3,12 +3,6 @@ import crypto from 'crypto';
 import sharp from 'sharp';
 import { validateImageFile } from '../utils/imageValidation.js';
 
-const s3 = new AWS.S3({
-  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-  region: process.env.AWS_REGION || 'us-east-1'
-});
-
 const BUCKET_NAME = process.env.AWS_S3_BUCKET_NAME;
 const AWS_REGION = process.env.AWS_REGION || 'us-east-1';
 const AWS_CLOUDFRONT_URL = process.env.AWS_CLOUDFRONT_URL;
@@ -79,6 +73,12 @@ const uploadValidatedImageToS3 = async (
   const uniqueId = generateUniqueIdentifier();
   // Always save as .webp
   const key = `${folderPath}/${timestamp}-${uniqueId}.webp`;
+
+  if (!s3 || !BUCKET_NAME) {
+    console.warn('S3 is not configured. Returning a local-style image path instead.');
+    return buildImageUrl(key);
+  }
+
   try {
     const webpBuffer = await convertToWebP(file);
 
@@ -146,6 +146,11 @@ const extractKeyFromUrl = (imageUrl: string): string => {
  * Delete a single image from S3
  */
 export const deleteImageFromS3 = async (imageUrl: string): Promise<void> => {
+  if (!s3 || !BUCKET_NAME) {
+    console.warn('S3 is not configured; skipping delete operation.');
+    return;
+  }
+
   try {
     const bucketName = getBucketName();
     const key = extractKeyFromUrl(imageUrl);
@@ -184,6 +189,10 @@ export const getSignedUrl = async (
   imageUrl: string,
   expiresIn: number = 3600
 ): Promise<string> => {
+  if (!s3 || !BUCKET_NAME) {
+    return imageUrl;
+  }
+
   try {
     const bucketName = getBucketName();
     const key = extractKeyFromUrl(imageUrl);

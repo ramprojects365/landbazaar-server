@@ -36,7 +36,7 @@ export class Property {
     length: 20,
     name: 'listing_type'
   })
-  listingType!: 'rent' | 'sale';
+  listingType!: string;
 
   @Column({
     type: 'varchar',
@@ -149,6 +149,32 @@ export class Property {
 
   @Column({
     type: 'varchar',
+    length: 30,
+    nullable: true,
+    name: 'area_unit'
+  })
+  areaUnit?: string;
+
+  @Column({
+    type: 'numeric',
+    precision: 15,
+    scale: 2,
+    nullable: true,
+    name: 'price_per_unit'
+  })
+  pricePerUnit?: number;
+
+  @Column({
+    type: 'numeric',
+    precision: 15,
+    scale: 2,
+    nullable: true,
+    name: 'total_price'
+  })
+  totalPrice?: number;
+
+  @Column({
+    type: 'varchar',
     length: 20,
     nullable: true
   })
@@ -210,6 +236,85 @@ export class Property {
     name: 'facing_direction'
   })
   facingDirection?: string;
+
+  @Column({
+    type: 'varchar',
+    length: 10,
+    nullable: true,
+    name: 'corner_plot'
+  })
+  cornerPlot?: string;
+
+  @Column({
+    type: 'varchar',
+    length: 30,
+    nullable: true,
+    name: 'road_width'
+  })
+  roadWidth?: string;
+
+  @Column({
+    type: 'varchar',
+    length: 120,
+    nullable: true,
+    name: 'survey_number'
+  })
+  surveyNumber?: string;
+
+  @Column({
+    type: 'jsonb',
+    nullable: true,
+    name: 'approval_types'
+  })
+  approvalTypes?: string[];
+
+  @Column({
+    type: 'varchar',
+    length: 50,
+    nullable: true,
+    name: 'soil_type'
+  })
+  soilType?: string;
+
+  @Column({
+    type: 'varchar',
+    length: 10,
+    nullable: true,
+    name: 'clear_title'
+  })
+  clearTitle?: string;
+
+  @Column({
+    type: 'varchar',
+    length: 30,
+    nullable: true,
+    name: 'loan_facility'
+  })
+  loanFacility?: string;
+
+  @Column({
+    type: 'varchar',
+    length: 10,
+    nullable: true,
+    name: 'registration_ready'
+  })
+  registrationReady?: string;
+
+  @Column({
+    type: 'varchar',
+    length: 100,
+    nullable: true,
+    name: 'contact_person_name'
+  })
+  contactPersonName?: string;
+
+  @Column({
+    type: 'varchar',
+    length: 20,
+    nullable: true,
+    name: 'contact_number'
+  })
+  contactNumber?: string;
 
   @Column({
     type: 'varchar',
