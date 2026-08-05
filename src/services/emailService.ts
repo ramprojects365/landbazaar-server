@@ -4,7 +4,6 @@ const resend = resendApiKey ? new Resend(resendApiKey) : null;
 let warnedMissingResendKey = false;
 
 const sendEmail = async (
-  payload: Parameters<NonNullable<typeof resend>['emails']['send']>[0],
   payload: Parameters<Resend['emails']['send']>[0],
   label: string
 ): Promise<void> => {

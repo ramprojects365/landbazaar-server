@@ -3,6 +3,20 @@ import crypto from 'crypto';
 import sharp from 'sharp';
 import { validateImageFile } from '../utils/imageValidation.js';
 
+const s3Configured = Boolean(
+  process.env.AWS_ACCESS_KEY_ID &&
+  process.env.AWS_SECRET_ACCESS_KEY &&
+  process.env.AWS_S3_BUCKET_NAME
+);
+
+const s3 = s3Configured
+  ? new AWS.S3({
+      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+      region: process.env.AWS_REGION || 'us-east-1'
+    })
+  : null;
+
 const BUCKET_NAME = process.env.AWS_S3_BUCKET_NAME;
 const AWS_REGION = process.env.AWS_REGION || 'us-east-1';
 const AWS_CLOUDFRONT_URL = process.env.AWS_CLOUDFRONT_URL;
@@ -56,7 +70,11 @@ const convertToWebP = async (file: Express.Multer.File): Promise<Buffer> => {
 /**
  * Build public image URL
  */
-const buildImageUrl = (key: string, bucketName: string): string => {
+const buildImageUrl = (key: string, bucketName?: string): string => {
+  if (!bucketName) {
+    return `/${key.replace(/^\/+/, '')}`;
+  }
+
   const publicBaseUrl =
     AWS_CLOUDFRONT_URL ||
     `https://${bucketName}.s3.${AWS_REGION}.amazonaws.com`;
