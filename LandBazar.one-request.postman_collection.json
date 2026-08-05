@@ -1,0 +1,27 @@
+{
+  "info": {
+    "name": "LandBazar One Request",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Login User",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:3008/api/auth/login"
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"landowner.hyd@example.com\",\n  \"password\": \"ram123\"\n}"
+        }
+      }
+    }
+  ]
+}

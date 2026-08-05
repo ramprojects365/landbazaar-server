@@ -1,0 +1,31 @@
+{
+  "info": {
+    "name": "LandBazar Create Land",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Create Land Post",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer YOUR_TOKEN_HERE"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:3008/api/properties"
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"listingType\": \"sale\",\n  \"propertyType\": \"HMDA Approved Plot\",\n  \"title\": \"Postman Test Land Plot\",\n  \"description\": \"Created from Postman flow validation\",\n  \"price\": 1750000,\n  \"areaUnit\": \"Square Yard\",\n  \"landSize\": 150,\n  \"pricePerUnit\": 11666,\n  \"totalPrice\": 1750000,\n  \"cityName\": \"Hyderabad\",\n  \"state\": \"Telangana\",\n  \"pincode\": \"500072\",\n  \"location\": \"Kukatpally, Hyderabad\",\n  \"facingDirection\": \"North\",\n  \"cornerPlot\": \"Yes\",\n  \"roadWidth\": \"30 ft\",\n  \"surveyNumber\": \"88/A\",\n  \"approvalTypes\": [\"HMDA\"],\n  \"clearTitle\": \"Yes\",\n  \"registrationReady\": \"Yes\",\n  \"contactPersonName\": \"Postman User\",\n  \"contactNumber\": \"+919900001111\",\n  \"amenities\": {\n    \"lifestyle\": [],\n    \"facilities\": [\"CC Road\", \"Street Lights\"],\n    \"security\": []\n  }\n}"
+        }
+      }
+    }
+  ]
+}

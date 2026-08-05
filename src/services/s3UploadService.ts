@@ -5,18 +5,10 @@ import { validateImageFile } from '../utils/imageValidation.js';
 
 const BUCKET_NAME = process.env.AWS_S3_BUCKET_NAME;
 const AWS_REGION = process.env.AWS_REGION || 'us-east-1';
-const AWS_CLOUDFRONT_URL =
-  process.env.AWS_CLOUDFRONT_URL ||
-  (BUCKET_NAME ? `https://${BUCKET_NAME}.s3.${AWS_REGION}.amazonaws.com` : '');
+const AWS_CLOUDFRONT_URL = process.env.AWS_CLOUDFRONT_URL;
 
 const MAX_IMAGES = 15;
-const s3 = BUCKET_NAME
-  ? new AWS.S3({
-      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-      region: AWS_REGION
-    })
-  : null;
+let warnedMissingS3Config = false;
 
 interface UploadParams {
   Bucket: string;
@@ -24,6 +16,19 @@ interface UploadParams {
   Body: Buffer;
   ContentType: string;
 }
+
+const getBucketName = (): string => {
+  if (!BUCKET_NAME) {
+    if (!warnedMissingS3Config) {
+      console.warn('S3 upload is not configured. Set AWS_S3_BUCKET_NAME to enable image upload.');
+      warnedMissingS3Config = true;
+    }
+
+    throw new Error('Image upload is not configured on this server. Please set AWS_S3_BUCKET_NAME.');
+  }
+
+  return BUCKET_NAME;
+};
 
 /**
  * Generate a unique file identifier
@@ -51,16 +56,19 @@ const convertToWebP = async (file: Express.Multer.File): Promise<Buffer> => {
 /**
  * Build public image URL
  */
-const buildImageUrl = (key: string): string => {
-  return AWS_CLOUDFRONT_URL
-    ? `${AWS_CLOUDFRONT_URL.replace(/\/$/, '')}/${key}`
-    : `/uploads/${key}`;
+const buildImageUrl = (key: string, bucketName: string): string => {
+  const publicBaseUrl =
+    AWS_CLOUDFRONT_URL ||
+    `https://${bucketName}.s3.${AWS_REGION}.amazonaws.com`;
+
+  return `${publicBaseUrl.replace(/\/$/, '')}/${key}`;
 };
 
 const uploadValidatedImageToS3 = async (
   file: Express.Multer.File,
   folderPath: string = 'uploads'
 ): Promise<string> => {
+  const bucketName = getBucketName();
   const timestamp = Date.now();
   const uniqueId = generateUniqueIdentifier();
   // Always save as .webp
@@ -75,14 +83,14 @@ const uploadValidatedImageToS3 = async (
     const webpBuffer = await convertToWebP(file);
 
     const params: UploadParams = {
-      Bucket: BUCKET_NAME,
+      Bucket: bucketName,
       Key: key,
       Body: webpBuffer,
       ContentType: 'image/webp'
     };
 
     await s3.upload(params).promise();
-    return buildImageUrl(key);
+    return buildImageUrl(key, bucketName);
   } catch (error) {
     console.error('S3 upload error:', error);
     throw new Error(`Failed to upload image to S3: ${error}`);
@@ -144,10 +152,11 @@ export const deleteImageFromS3 = async (imageUrl: string): Promise<void> => {
   }
 
   try {
+    const bucketName = getBucketName();
     const key = extractKeyFromUrl(imageUrl);
 
     const params = {
-      Bucket: BUCKET_NAME,
+      Bucket: bucketName,
       Key: key
     };
 
@@ -185,10 +194,11 @@ export const getSignedUrl = async (
   }
 
   try {
+    const bucketName = getBucketName();
     const key = extractKeyFromUrl(imageUrl);
 
     const signedUrl = s3.getSignedUrl('getObject', {
-      Bucket: BUCKET_NAME,
+      Bucket: bucketName,
       Key: key,
       Expires: expiresIn
     });
