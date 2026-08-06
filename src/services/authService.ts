@@ -13,6 +13,7 @@ const JWT_EXPIRY = process.env.JWT_EXPIRY || '7d';
 const REN_NUMBER_PATTERN = /^(REN|PEA)\d{4,6}$/;
 const VERIFIED_REN_STATUS = 'verified';
 const NOT_VERIFIED_REN_STATUS = 'not_verified';
+const PASSWORD_REGEX = /^[A-Za-z0-9]{6,}$/;
 
 if (!process.env.JWT_SECRET) {
   throw new Error('JWT_SECRET environment variable is required');
@@ -73,6 +74,15 @@ const normalizeRenStatus = (renStatus?: string | null): string => {
   return normalized === VERIFIED_REN_STATUS ? VERIFIED_REN_STATUS : NOT_VERIFIED_REN_STATUS;
 };
 
+const validatePassword = (value: string, label: string): void => {
+  if (!PASSWORD_REGEX.test(value)) {
+    throw {
+      status: 400,
+      message: `${label} must be at least 6 characters and contain only letters and numbers`
+    } as ServiceError;
+  }
+};
+
 const withRenVerification = <T extends { renStatus?: string | null }>(user: T) => {
   const renStatus = normalizeRenStatus(user.renStatus);
   const renVerified = renStatus === VERIFIED_REN_STATUS;
@@ -88,6 +98,7 @@ const withRenVerification = <T extends { renStatus?: string | null }>(user: T) =
 
 export const registerUser = async (registrationData: RegistrationData) => {
   const { email, password } = registrationData;
+  validatePassword(password, 'Password');
   const username = registrationData.username?.trim() || generateUsernameFromEmail(email);
   const userType = registrationData.userType?.trim() || null;
   const renNumber = normalizeRenNumber(registrationData.renNumber);
@@ -332,6 +343,9 @@ export const changePassword = async (
   oldPassword: string,
   newPassword: string
 ): Promise<void> => {
+  validatePassword(oldPassword, 'Old password');
+  validatePassword(newPassword, 'New password');
+
   const user = await userRepository.findUserByIdWithPassword(userId);
 
   if (!user) {
@@ -390,6 +404,8 @@ export const resetPasswordWithToken = async (
     await userRepository.clearPasswordResetToken(user.id);
     throw { status: 400, message: 'Reset link has expired' } as ServiceError;
   }
+
+  validatePassword(newPassword, 'New password');
 
   const newPasswordHash = await bcrypt.hash(newPassword, BCRYPT_SALT_ROUNDS);
   await userRepository.updatePassword(user.id, newPasswordHash);

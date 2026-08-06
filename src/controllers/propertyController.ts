@@ -109,7 +109,6 @@ type PropertyBodyField = keyof Pick<
   | 'streetName'
   | 'cityName'
   | 'state'
-  | 'county'
   | 'pincode'
   | 'landmark'
   | 'location'
@@ -119,7 +118,6 @@ type PropertyBodyField = keyof Pick<
   | 'status'
   | 'negotiable'
   | 'images'
-  | 'floorPlan'
   | 'amenities'
   | 'price'
   | 'buildupArea'
@@ -165,7 +163,6 @@ const propertyBodyKeys: Record<PropertyBodyField, string[]> = {
   streetName: ['streetName', 'street_name'],
   cityName: ['cityName', 'city_name'],
   state: ['state'],
-  county: ['county'],
   pincode: ['pincode'],
   landmark: ['landmark'],
   location: ['location'],
@@ -175,7 +172,6 @@ const propertyBodyKeys: Record<PropertyBodyField, string[]> = {
   status: ['status'],
   negotiable: ['negotiable'],
   images: ['images'],
-  floorPlan: ['floorPlan', 'floor_plan'],
   amenities: ['amenities'],
   price: ['price'],
   buildupArea: ['buildupArea', 'buildup_area'],
@@ -239,7 +235,6 @@ const buildPropertyPayload = (
     'streetName',
     'cityName',
     'state',
-    'county',
     'pincode',
     'landmark',
     'location',
@@ -247,7 +242,6 @@ const buildPropertyPayload = (
     'furnishing',
     'availability',
     'floorLevel',
-    'floorPlan',
     'carParkAllocation',
     'facingDirection',
     'cornerPlot',
@@ -448,9 +442,13 @@ export const getPropertyById = async (req: Request, res: Response): Promise<void
 
 export const getAllProperties = async (req: Request, res: Response): Promise<void> => {
   try {
+    const propertyTypeQuery =
+      (req.query.propertyType as string | undefined) ??
+      (req.query.landType as string | undefined);
+
     const filters = {
       listingType: req.query.listingType as string | undefined,
-      propertyType: req.query.propertyType as string | undefined,
+      propertyType: propertyTypeQuery,
       tenure: req.query.tenure as 'freehold' | 'leasehold' | undefined,
       furnishing: req.query.furnishing as 'Fully' | 'Partially' | 'Unfurnished' | undefined,
       availability: req.query.availability as
@@ -628,7 +626,9 @@ export const searchProperties = async (req: Request, res: Response): Promise<voi
     const type = req.query.type as string | undefined;
     const city = req.query.city as string | undefined;
     const propertyName = req.query.propertyName as string | undefined;
-    const propertyType = req.query.propertyType as string | undefined;
+    const propertyType =
+      (req.query.propertyType as string | undefined) ??
+      (req.query.landType as string | undefined);
 
     const filters = { q, type, city, propertyName, propertyType };
     const hasFilter = q || type || city || propertyName || propertyType;

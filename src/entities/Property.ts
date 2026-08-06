@@ -406,13 +406,6 @@ export class Property {
   images?: Array<string | PropertyImage>;
 
   @Column({
-    type: 'text',
-    nullable: true,
-    name: 'floor_plan'
-  })
-  floorPlan?: string;
-
-  @Column({
     type: 'varchar',
     length: 50,
     default: 'active'

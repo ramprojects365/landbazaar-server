@@ -4,6 +4,7 @@ import { register, login, getProfile, updateProfile, changePassword, forgotPassw
 import { authenticateToken } from '../middleware/auth.js';
 
 const router = express.Router();
+const ALPHANUMERIC_PASSWORD_REGEX = /^[A-Za-z0-9]{6,}$/;
 
 router.post(
   '/register',
@@ -14,10 +15,8 @@ router.post(
       .withMessage('Invalid email address')
       .normalizeEmail(),
     body('password')
-      .isLength({ min: 4 })
-      .withMessage('Password must be at least 4 characters long')
-      .matches(/^[A-Za-z0-9]+$/)
-      .withMessage('Password must contain only letters and numbers')
+      .matches(ALPHANUMERIC_PASSWORD_REGEX)
+      .withMessage('Password must be at least 6 characters and contain only letters and numbers')
   ],
   register
 );
@@ -33,6 +32,8 @@ router.post(
     body('password')
       .notEmpty()
       .withMessage('Password is required')
+      .matches(ALPHANUMERIC_PASSWORD_REGEX)
+      .withMessage('Password must be at least 6 characters and contain only letters and numbers')
   ],
   login
 );
@@ -91,12 +92,14 @@ router.put(
 );
 
 const changePasswordValidation = [
-  body('oldPassword').optional().notEmpty().withMessage('Old password is required'),
-  body('old_password').optional().notEmpty().withMessage('Old password is required'),
-  body('newPassword').optional().isLength({ min: 8 }).withMessage('New password must be at least 8 characters')
-    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/).withMessage('Password must contain uppercase, lowercase and number'),
-  body('new_password').optional().isLength({ min: 8 }).withMessage('New password must be at least 8 characters')
-    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/).withMessage('Password must contain uppercase, lowercase and number'),
+  body('oldPassword').optional().notEmpty().withMessage('Old password is required')
+    .matches(ALPHANUMERIC_PASSWORD_REGEX).withMessage('Old password must be at least 6 characters and alphanumeric only'),
+  body('old_password').optional().notEmpty().withMessage('Old password is required')
+    .matches(ALPHANUMERIC_PASSWORD_REGEX).withMessage('Old password must be at least 6 characters and alphanumeric only'),
+  body('newPassword').optional()
+    .matches(ALPHANUMERIC_PASSWORD_REGEX).withMessage('New password must be at least 6 characters and alphanumeric only'),
+  body('new_password').optional()
+    .matches(ALPHANUMERIC_PASSWORD_REGEX).withMessage('New password must be at least 6 characters and alphanumeric only'),
 ];
 
 router.put('/change-password', authenticateToken, changePasswordValidation, changePassword);
@@ -122,16 +125,12 @@ router.post(
       .withMessage('Reset token is required'),
     body('newPassword')
       .optional()
-      .isLength({ min: 8 })
-      .withMessage('New password must be at least 8 characters')
-      .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
-      .withMessage('Password must contain uppercase, lowercase and number'),
+      .matches(ALPHANUMERIC_PASSWORD_REGEX)
+      .withMessage('New password must be at least 6 characters and alphanumeric only'),
     body('new_password')
       .optional()
-      .isLength({ min: 8 })
-      .withMessage('New password must be at least 8 characters')
-      .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
-      .withMessage('Password must contain uppercase, lowercase and number')
+      .matches(ALPHANUMERIC_PASSWORD_REGEX)
+      .withMessage('New password must be at least 6 characters and alphanumeric only')
   ],
   resetPassword
 );
