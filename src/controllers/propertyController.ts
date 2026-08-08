@@ -3,6 +3,7 @@ import * as propertyService from '../services/propertyService.js';
 import * as propertyFitService from '../services/propertyFitService.js';
 import { Property, PropertyImage } from '../entities/Property.js';
 import { AppError } from '../utils/errors.js';
+import { parseIndianPriceValue } from '../utils/priceParsing.js';
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -11,6 +12,15 @@ const isValidUuid = (value: string): boolean => UUID_REGEX.test(value);
 const parseOptionalFloat = (value: unknown): number | undefined => {
   if (value === undefined || value === null || value === '') {
     return undefined;
+  }
+
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return value;
+  }
+
+  const maybeIndianPrice = parseIndianPriceValue(value);
+  if (maybeIndianPrice !== undefined) {
+    return maybeIndianPrice;
   }
 
   const parsed = typeof value === 'number' ? value : parseFloat(String(value));

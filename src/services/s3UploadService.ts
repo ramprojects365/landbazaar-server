@@ -58,7 +58,7 @@ const convertToWebP = async (file: Express.Multer.File): Promise<Buffer> => {
   return sharp(file.buffer)
     .rotate()
     .resize({
-      width: 1200,
+      width: 1600,
       withoutEnlargement: true
     })
     .webp({

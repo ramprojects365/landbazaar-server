@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
 import * as authService from '../services/authService.js';
+import { resolveUserId } from '../utils/authPayload.js';
 
 export const register = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -303,17 +304,31 @@ export const resetPassword = async (req: Request, res: Response): Promise<void> 
 };
 export const verifyOTP = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { user_id, otp } = req.body;
+    const { otp, email } = req.body;
+    const normalizedOtp = String(otp || '').trim();
+    const resolvedUserId = resolveUserId(req.body as Record<string, unknown>);
 
-    if (!user_id || !otp) {
+    if (!normalizedOtp) {
       res.status(400).json({
         success: false,
-        message: 'User ID and OTP required'
+        message: 'OTP is required'
       });
       return;
     }
 
-    const result = await authService.verifyOTP(user_id, otp);
+    let result;
+
+    if (resolvedUserId) {
+      result = await authService.verifyOTP(resolvedUserId, normalizedOtp);
+    } else if (email) {
+      result = await authService.verifyOtpByEmail(String(email).trim().toLowerCase(), normalizedOtp);
+    } else {
+      res.status(400).json({
+        success: false,
+        message: 'User ID or email and OTP required'
+      });
+      return;
+    }
 
     res.status(200).json({
       success: true,

@@ -4,6 +4,7 @@ import crypto from 'crypto';
 import * as userRepository from '../repositories/userRepository.js';
 import { RegistrationData, LoginCredentials, AuthToken, UserProfile, UpdateProfileData } from '../types/user.js';
 import { generateOTP } from '../utils/otp.js';
+import { resolveUserId } from '../utils/authPayload.js';
 import { sendOtpEmail, sendPasswordResetEmail } from './emailService.js';
 
 const BCRYPT_SALT_ROUNDS = 10;
@@ -425,13 +426,14 @@ export const validateToken = async (userId: string): Promise<UserProfile> => {
 };
 
 export const verifyOTP = async (userId: string, code: string) => {
+  const normalizedCode = String(code || '').trim();
   const user = await userRepository.findUserById(userId);
 
   if (!user) {
     throw { status: 404, message: 'User not found' };
   }
 
-  const otpRecord = await userRepository.findValidOTP(userId, code);
+  const otpRecord = await userRepository.findValidOTP(userId, normalizedCode);
 
   if (!otpRecord) {
     throw { status: 400, message: 'Invalid or expired OTP' };
@@ -449,7 +451,8 @@ export const verifyOtpByEmail = async (
   email: string,
   code: string
 ): Promise<AuthToken> => {
-  const user = await userRepository.findUserByEmail(email);
+  const normalizedEmail = String(email || '').trim().toLowerCase();
+  const user = await userRepository.findUserByEmail(normalizedEmail);
 
   if (!user) {
     throw {
@@ -465,8 +468,8 @@ export const verifyOtpByEmail = async (
     } as ServiceError;
   }
 
-  // ✅ FIXED HERE
-  const otpMatch = await userRepository.findValidOTP(user.id, code);
+  const normalizedCode = String(code || '').trim();
+  const otpMatch = await userRepository.findValidOTP(user.id, normalizedCode);
 
   if (!otpMatch) {
     throw {

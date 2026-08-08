@@ -48,6 +48,7 @@
     "@types/node": "^24.12.2",
     "@types/nodemailer": "^8.0.0",
     "@types/pg": "^8.15.6",
+    "tsx": "^4.23.11",
     "typescript": "^5.9.3"
   }
 }

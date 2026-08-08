@@ -4,7 +4,9 @@ import { AppError, ValidationError } from './errors.js';
 export const IMAGE_UPLOAD_LIMITS = {
   maxFileWeightBytes: 5 * 1024 * 1024,
   maxWidth: 8000,
-  maxHeight: 8000
+  maxHeight: 8000,
+  minWidth: 1200,
+  minHeight: 900
 };
 
 export const PROPERTY_IMAGE_MIME_TYPES = [
@@ -54,6 +56,8 @@ export const validateImageFile = async (
   const maxFileWeightBytes = options.maxFileWeightBytes ?? IMAGE_UPLOAD_LIMITS.maxFileWeightBytes;
   const maxWidth = options.maxWidth ?? IMAGE_UPLOAD_LIMITS.maxWidth;
   const maxHeight = options.maxHeight ?? IMAGE_UPLOAD_LIMITS.maxHeight;
+  const requiredMinWidth = IMAGE_UPLOAD_LIMITS.minWidth;
+  const requiredMinHeight = IMAGE_UPLOAD_LIMITS.minHeight;
 
   validateImageMimeType(file, allowedMimeTypes);
 
@@ -75,6 +79,10 @@ export const validateImageFile = async (
 
   if (!metadata.width || !metadata.height) {
     throw new ValidationError('Invalid image size. Image dimensions could not be detected.');
+  }
+
+  if (metadata.width < requiredMinWidth || metadata.height < requiredMinHeight) {
+    throw new ValidationError(`Image resolution is too low. Minimum required size is ${requiredMinWidth}x${requiredMinHeight}px.`);
   }
 
   if (metadata.width > maxWidth || metadata.height > maxHeight) {

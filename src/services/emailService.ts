@@ -38,7 +38,7 @@ const buildOtpEmailHtml = (username: string, otp: string): string => {
 <html>
   <head>
     <meta charset="utf-8" />
-    <title>Verify your PropertyLa account</title>
+    <title>Verify your LandWay account</title>
   </head>
   <body style="margin:0;padding:0;background:#f5f7fa;font-family:Arial,Helvetica,sans-serif;color:#222;">
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f5f7fa;padding:32px 0;">
@@ -47,7 +47,7 @@ const buildOtpEmailHtml = (username: string, otp: string): string => {
           <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,0.06);overflow:hidden;">
             <tr>
               <td style="background:#0d6efd;padding:24px 32px;color:#ffffff;">
-                <h1 style="margin:0;font-size:22px;font-weight:600;">PropertyLa</h1>
+                <h1 style="margin:0;font-size:22px;font-weight:600;">LandWay</h1>
               </td>
             </tr>
             <tr>
@@ -69,7 +69,7 @@ const buildOtpEmailHtml = (username: string, otp: string): string => {
             </tr>
             <tr>
               <td style="background:#f0f2f5;padding:16px 32px;color:#888;font-size:12px;text-align:center;">
-                &copy; ${new Date().getFullYear()} PropertyLa. All rights reserved.
+                &copy; ${new Date().getFullYear()} LandWay. All rights reserved.
               </td>
             </tr>
           </table>
@@ -86,12 +86,12 @@ export const sendOtpEmail = async (
   otp: string
 ): Promise<void> => {
   const from =
-    process.env.MAIL_FROM || "PropertyLa <support@propertyla.com.my>";
+    process.env.MAIL_FROM || "LandWay <support@landway.com>";
 
   await sendEmail({
     from,
     to,
-    subject: "Your PropertyLa verification code",
+    subject: "Your LandWay verification code",
     html: buildOtpEmailHtml(username, otp),
     text: `Hi ${username}, your OTP is ${otp}`,
   }, 'OTP');
@@ -157,7 +157,7 @@ const buildPropertyFitListHtml = (
           <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:8px;overflow:hidden;">
             <tr>
               <td style="background:#003b5c;padding:24px 32px;color:#ffffff;">
-                <h1 style="margin:0;font-size:22px;">PropertyLa</h1>
+                <h1 style="margin:0;font-size:22px;">LandWay</h1>
               </td>
             </tr>
             <tr>
@@ -181,7 +181,7 @@ export const sendPropertyFitListEmail = async (
   name: string,
   properties: PropertyFitEmailItem[]
 ): Promise<void> => {
-  const from = process.env.MAIL_FROM || 'PropertyLa <support@propertyla.com.my>';
+  const from = process.env.MAIL_FROM || 'LandWay <support@landway.com>';
   const propertyText = properties.length
     ? properties
       .map((property) => `- ${property.title} | ${formatPrice(property.price)} | ${property.location || 'Location pending'}${property.url ? ` | ${property.url}` : ''}`)
@@ -191,9 +191,9 @@ export const sendPropertyFitListEmail = async (
   await sendEmail({
     from,
     to,
-    subject: 'Your PropertyLa property matches',
+    subject: 'Your LandWay property matches',
     html: buildPropertyFitListHtml(name, properties),
-    text: `Hi, your PropertyLa matches:\n\n${propertyText}`,
+    text: `Hi, your LandWay matches:\n\n${propertyText}`,
   }, 'Property fit list');
 };
 
@@ -202,7 +202,7 @@ const getClientLoginUrl = (): string => {
     process.env.PUBLIC_CLIENT_URL ||
     process.env.CLIENT_URL ||
     (process.env.NODE_ENV === 'production' ? undefined : 'http://localhost:3000') ||
-    'https://www.propertyla.com.my';
+    'https://www.landway.com';
 
   return `${clientUrl.replace(/\/$/, '')}/sign-in`;
 };
@@ -212,7 +212,7 @@ const getClientResetPasswordUrl = (token: string): string => {
     process.env.PUBLIC_CLIENT_URL ||
     process.env.CLIENT_URL ||
     (process.env.NODE_ENV === 'production' ? undefined : 'http://localhost:3000') ||
-    'https://www.propertyla.com.my';
+    'https://www.landway.com';
 
   return `${clientUrl.replace(/\/$/, '')}/reset-password?token=${encodeURIComponent(token)}`;
 };
@@ -227,14 +227,14 @@ const buildResetPasswordHtml = (username: string, resetUrl: string): string => {
           <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:8px;overflow:hidden;">
             <tr>
               <td style="background:#003b5c;padding:24px 32px;color:#ffffff;">
-                <h1 style="margin:0;font-size:22px;">PropertyLa</h1>
+                <h1 style="margin:0;font-size:22px;">LandWay</h1>
               </td>
             </tr>
             <tr>
               <td style="padding:32px;">
                 <h2 style="margin:0 0 14px;font-size:20px;color:#111;">Reset your password</h2>
                 <p style="margin:0 0 16px;line-height:1.5;">Hi ${username || 'there'},</p>
-                <p style="margin:0 0 18px;line-height:1.5;">Use the button below to choose a new PropertyLa password. This link expires in 1 hour.</p>
+                <p style="margin:0 0 18px;line-height:1.5;">Use the button below to choose a new LandWay password. This link expires in 1 hour.</p>
                 <a href="${resetUrl}" style="display:inline-block;background:#003b5c;color:#ffffff;text-decoration:none;border-radius:6px;padding:11px 16px;font-size:14px;font-weight:700;">Reset password</a>
                 <p style="margin:18px 0 0;line-height:1.5;color:#555;font-size:14px;">If you did not request this, you can safely ignore this email.</p>
               </td>
@@ -252,15 +252,15 @@ export const sendPasswordResetEmail = async (params: {
   username: string;
   token: string;
 }): Promise<void> => {
-  const from = process.env.MAIL_FROM || 'PropertyLa <support@propertyla.com.my>';
+  const from = process.env.MAIL_FROM || 'LandWay <support@landway.com>';
   const resetUrl = getClientResetPasswordUrl(params.token);
 
   await sendEmail({
     from,
     to: params.to,
-    subject: 'Reset your PropertyLa password',
+    subject: 'Reset your LandWay password',
     html: buildResetPasswordHtml(params.username, resetUrl),
-    text: `Hi ${params.username || 'there'}, reset your PropertyLa password here: ${resetUrl}. This link expires in 1 hour.`,
+    text: `Hi ${params.username || 'there'}, reset your LandWay password here: ${resetUrl}. This link expires in 1 hour.`,
   }, 'Password reset');
 };
 
@@ -280,14 +280,14 @@ const buildLeadAccountHtml = (params: {
           <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:8px;overflow:hidden;">
             <tr>
               <td style="background:#003b5c;padding:24px 32px;color:#ffffff;">
-                <h1 style="margin:0;font-size:22px;">PropertyLa</h1>
+                <h1 style="margin:0;font-size:22px;">LandWay</h1>
               </td>
             </tr>
             <tr>
               <td style="padding:32px;">
                 <h2 style="margin:0 0 14px;font-size:20px;color:#111;">Your property search is saved</h2>
                 <p style="margin:0 0 16px;line-height:1.5;">Hi,</p>
-                <p style="margin:0 0 18px;line-height:1.5;">We created a simple PropertyLa lead login so you can come back to your property search later.</p>
+                <p style="margin:0 0 18px;line-height:1.5;">We created a simple LandWay lead login so you can come back to your property search later.</p>
                 <div style="background:#eefafa;border:1px solid #cce8ea;border-radius:8px;padding:16px;margin:18px 0;">
                   <p style="margin:0 0 8px;font-size:14px;color:#555;">Email</p>
                   <strong style="display:block;margin-bottom:14px;color:#111;">${params.email}</strong>
@@ -311,19 +311,19 @@ export const sendPropertyFitLeadPasswordEmail = async (params: {
   name: string;
   password: string;
 }): Promise<void> => {
-  const from = process.env.MAIL_FROM || 'PropertyLa <support@propertyla.com.my>';
+  const from = process.env.MAIL_FROM || 'LandWay <support@landway.com>';
   const loginUrl = getClientLoginUrl();
 
   await sendEmail({
     from,
     to: params.to,
-    subject: 'Your PropertyLa login details',
+    subject: 'Your LandWay login details',
     html: buildLeadAccountHtml({
       name: params.name,
       email: params.to,
       password: params.password
     }),
-    text: `Hi, your PropertyLa search is saved. Login: ${loginUrl}\nEmail: ${params.to}\nPassword: ${params.password}`,
+    text: `Hi, your LandWay search is saved. Login: ${loginUrl}\nEmail: ${params.to}\nPassword: ${params.password}`,
   }, 'Property fit password');
 };
 
@@ -339,13 +339,13 @@ const buildWelcomeBackHtml = (name: string): string => {
           <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:8px;overflow:hidden;">
             <tr>
               <td style="background:#003b5c;padding:24px 32px;color:#ffffff;">
-                <h1 style="margin:0;font-size:22px;">PropertyLa</h1>
+                <h1 style="margin:0;font-size:22px;">LandWay</h1>
               </td>
             </tr>
             <tr>
               <td style="padding:32px;">
                 <h2 style="margin:0 0 14px;font-size:20px;color:#111;">Welcome back</h2>
-                <p style="margin:0 0 18px;line-height:1.5;">Hi, this email is already connected to PropertyLa. You can sign in to continue your search.</p>
+                <p style="margin:0 0 18px;line-height:1.5;">Hi, this email is already connected to LandWay. You can sign in to continue your search.</p>
                 <a href="${loginUrl}" style="display:inline-block;background:#003b5c;color:#ffffff;text-decoration:none;border-radius:6px;padding:11px 16px;font-size:14px;font-weight:700;">Sign in</a>
                 <p style="margin:18px 0 0;line-height:1.5;color:#555;font-size:14px;">Our team may also follow up if your latest search needs agent help.</p>
               </td>
@@ -362,15 +362,15 @@ export const sendPropertyFitWelcomeBackEmail = async (params: {
   to: string;
   name: string;
 }): Promise<void> => {
-  const from = process.env.MAIL_FROM || 'PropertyLa <support@propertyla.com.my>';
+  const from = process.env.MAIL_FROM || 'LandWay <support@landway.com>';
   const loginUrl = getClientLoginUrl();
 
   await sendEmail({
     from,
     to: params.to,
-    subject: 'Welcome back to PropertyLa',
+    subject: 'Welcome back to LandWay',
     html: buildWelcomeBackHtml(params.name),
-    text: `Hi, welcome back to PropertyLa. You can sign in here: ${loginUrl}`,
+    text: `Hi, welcome back to LandWay. You can sign in here: ${loginUrl}`,
   }, 'Property fit welcome back');
 };
 
@@ -383,8 +383,8 @@ export const sendPropertyViewNotificationEmail = async (params: {
   propertyTitle: string;
   propertyUrl?: string;
 }): Promise<void> => {
-  const from = process.env.MAIL_FROM || 'PropertyLa <support@propertyla.com.my>';
-  const leadName = params.leadName || 'A PropertyLa visitor';
+  const from = process.env.MAIL_FROM || 'LandWay <support@landway.com>';
+  const leadName = params.leadName || 'A LandWay visitor';
 
   await sendEmail({
     from,
@@ -406,9 +406,9 @@ export const sendContactMessageEmail = async (params: {
   message: string;
   source?: string;
 }): Promise<void> => {
-  const from = process.env.MAIL_FROM || 'PropertyLa <support@propertyla.com.my>';
-  const to = process.env.CONTACT_TO_EMAIL || process.env.MAIL_TO || 'support@propertyla.com.my';
-  const subject = params.subject?.trim() || 'New PropertyLa contact message';
+  const from = process.env.MAIL_FROM || 'LandWay <support@landway.com>';
+  const to = process.env.CONTACT_TO_EMAIL || process.env.MAIL_TO || 'support@landway.com';
+  const subject = params.subject?.trim() || 'New LandWay contact message';
   const safe = {
     name: escapeHtml(params.name),
     email: escapeHtml(params.email),
@@ -422,7 +422,7 @@ export const sendContactMessageEmail = async (params: {
     from,
     to,
     replyTo: params.email,
-    subject: `PropertyLa contact: ${subject}`,
+    subject: `LandWay contact: ${subject}`,
     html: `<p><strong>Source:</strong> ${safe.source}</p>
       <p><strong>Name:</strong> ${safe.name}</p>
       <p><strong>Email:</strong> ${safe.email}</p>

@@ -14,11 +14,16 @@ const getUserRepository = (): Repository<User> => {
 
 export const findValidOTP = async (userId: string, otp: string): Promise<boolean> => {
   const repository = getUserRepository();
+  const normalizedOtp = String(otp || '').trim();
+
+  if (!normalizedOtp) {
+    return false;
+  }
 
   const user = await repository.findOne({
     where: {
       id: userId,
-      otp
+      otp: normalizedOtp
     }
   });
 
