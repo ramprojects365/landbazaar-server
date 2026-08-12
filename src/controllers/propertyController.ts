@@ -155,7 +155,12 @@ type PropertyBodyField = keyof Pick<
   | 'contactNumber'
   | 'renovationStatus'
   | 'depositAmount'
+  | 'monthlyRent'
+  | 'leaseDurationYears'
   | 'minimumRentalPeriod'
+  | 'renewalOption'
+  | 'rentEscalationPercent'
+  | 'noticePeriod'
   | 'petPolicy'
   | 'preferredTenantType'
   | 'maintenanceFee'
@@ -209,7 +214,12 @@ const propertyBodyKeys: Record<PropertyBodyField, string[]> = {
   contactNumber: ['contactNumber', 'contact_number'],
   renovationStatus: ['renovationStatus', 'renovation_status'],
   depositAmount: ['depositAmount', 'deposit_amount'],
+  monthlyRent: ['monthlyRent', 'monthly_rent'],
+  leaseDurationYears: ['leaseDurationYears', 'lease_duration_years'],
   minimumRentalPeriod: ['minimumRentalPeriod', 'minimum_rental_period'],
+  renewalOption: ['renewalOption', 'renewal_option'],
+  rentEscalationPercent: ['rentEscalationPercent', 'rent_escalation_percent'],
+  noticePeriod: ['noticePeriod', 'notice_period'],
   petPolicy: ['petPolicy', 'pet_policy'],
   preferredTenantType: ['preferredTenantType', 'preferred_tenant_type'],
   maintenanceFee: ['maintenanceFee', 'maintenance_fee'],
@@ -333,6 +343,18 @@ const buildPropertyPayload = (
 
   const depositAmount = parseOptionalFloat(getBodyValue(body, 'depositAmount'));
   if (depositAmount !== undefined) propertyData.depositAmount = depositAmount;
+
+  const monthlyRent = parseOptionalFloat(getBodyValue(body, 'monthlyRent'));
+  if (monthlyRent !== undefined) propertyData.monthlyRent = monthlyRent;
+
+  const leaseDurationYears = parseOptionalFloat(getBodyValue(body, 'leaseDurationYears'));
+  if (leaseDurationYears !== undefined) propertyData.leaseDurationYears = leaseDurationYears;
+
+  const rentEscalationPercent = parseOptionalFloat(getBodyValue(body, 'rentEscalationPercent'));
+  if (rentEscalationPercent !== undefined) propertyData.rentEscalationPercent = rentEscalationPercent;
+
+  const noticePeriod = parseOptionalFloat(getBodyValue(body, 'noticePeriod'));
+  if (noticePeriod !== undefined) propertyData.noticePeriod = noticePeriod;
 
   const maintenanceFee = parseOptionalFloat(getBodyValue(body, 'maintenanceFee'));
   if (maintenanceFee !== undefined) propertyData.maintenanceFee = maintenanceFee;

@@ -334,12 +334,56 @@ export class Property {
   depositAmount?: number;
 
   @Column({
+    type: 'numeric',
+    precision: 15,
+    scale: 2,
+    nullable: true,
+    name: 'monthly_rent'
+  })
+  monthlyRent?: number;
+
+  @Column({
+    type: 'numeric',
+    precision: 15,
+    scale: 2,
+    nullable: true,
+    name: 'lease_duration_years'
+  })
+  leaseDurationYears?: number;
+
+  @Column({
     type: 'varchar',
     length: 100,
     nullable: true,
     name: 'minimum_rental_period'
   })
   minimumRentalPeriod?: string;
+
+  @Column({
+    type: 'varchar',
+    length: 50,
+    nullable: true,
+    name: 'renewal_option'
+  })
+  renewalOption?: string;
+
+  @Column({
+    type: 'numeric',
+    precision: 10,
+    scale: 2,
+    nullable: true,
+    name: 'rent_escalation_percent'
+  })
+  rentEscalationPercent?: number;
+
+  @Column({
+    type: 'numeric',
+    precision: 10,
+    scale: 2,
+    nullable: true,
+    name: 'notice_period'
+  })
+  noticePeriod?: number;
 
   @Column({
     type: 'varchar',
