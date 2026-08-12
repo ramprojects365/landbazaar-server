@@ -137,6 +137,10 @@ export const registerUser = async (registrationData: RegistrationData) => {
     await sendOtpEmail(newUser.email, newUser.username, otp);
   } catch (err) {
     console.error('Failed to send OTP email:', err);
+    throw {
+      status: 503,
+      message: 'Unable to send verification OTP. Please check the email service configuration.'
+    } as ServiceError;
   }
 
   return withRenVerification({
@@ -378,11 +382,19 @@ export const requestPasswordReset = async (email: string): Promise<{ emailQueued
     calculatePasswordResetExpiry()
   );
 
-  await sendPasswordResetEmail({
-    to: user.email,
-    username: user.username,
-    token: resetToken
-  });
+  try {
+    await sendPasswordResetEmail({
+      to: user.email,
+      username: user.username,
+      token: resetToken
+    });
+  } catch (err) {
+    console.error('Failed to send password reset email:', err);
+    throw {
+      status: 503,
+      message: 'Unable to send password reset email. Please check the email service configuration.'
+    } as ServiceError;
+  }
 
   return { emailQueued: true };
 };

@@ -7,12 +7,13 @@ const sendEmail = async (
   payload: Parameters<Resend['emails']['send']>[0],
   label: string
 ): Promise<void> => {
-  if (!resend) {
+  if (!resend || !process.env.RESEND_API_KEY?.trim()) {
+    const message = 'Email delivery is not configured. Set RESEND_API_KEY in the server .env file and use a verified MAIL_FROM address before sending OTP or reset emails.';
     if (!warnedMissingResendKey) {
-      console.warn('RESEND_API_KEY is not set. Email sending is disabled.');
+      console.error(message);
       warnedMissingResendKey = true;
     }
-    return;
+    throw new Error(message);
   }
 
   const result = await resend.emails.send(payload);
@@ -86,7 +87,7 @@ export const sendOtpEmail = async (
   otp: string
 ): Promise<void> => {
   const from =
-    process.env.MAIL_FROM || "Dekho Land <support@dekholand.com>";
+    process.env.MAIL_FROM || "Dekho Land <support@propertyla.com.my>";
 
   await sendEmail({
     from,
@@ -181,7 +182,7 @@ export const sendPropertyFitListEmail = async (
   name: string,
   properties: PropertyFitEmailItem[]
 ): Promise<void> => {
-  const from = process.env.MAIL_FROM || 'Dekho Land <support@dekholand.com>';
+  const from = process.env.MAIL_FROM || 'Dekho Land <support@propertyla.com.my>';
   const propertyText = properties.length
     ? properties
       .map((property) => `- ${property.title} | ${formatPrice(property.price)} | ${property.location || 'Location pending'}${property.url ? ` | ${property.url}` : ''}`)
@@ -252,7 +253,7 @@ export const sendPasswordResetEmail = async (params: {
   username: string;
   token: string;
 }): Promise<void> => {
-  const from = process.env.MAIL_FROM || 'Dekho Land <support@dekholand.com>';
+  const from = process.env.MAIL_FROM || 'Dekho Land <support@propertyla.com.my>';
   const resetUrl = getClientResetPasswordUrl(params.token);
 
   await sendEmail({
@@ -311,7 +312,7 @@ export const sendPropertyFitLeadPasswordEmail = async (params: {
   name: string;
   password: string;
 }): Promise<void> => {
-  const from = process.env.MAIL_FROM || 'Dekho Land <support@dekholand.com>';
+  const from = process.env.MAIL_FROM || 'Dekho Land <support@propertyla.com.my>';
   const loginUrl = getClientLoginUrl();
 
   await sendEmail({
@@ -362,7 +363,7 @@ export const sendPropertyFitWelcomeBackEmail = async (params: {
   to: string;
   name: string;
 }): Promise<void> => {
-  const from = process.env.MAIL_FROM || 'Dekho Land <support@dekholand.com>';
+  const from = process.env.MAIL_FROM || 'Dekho Land <support@propertyla.com.my>';
   const loginUrl = getClientLoginUrl();
 
   await sendEmail({
@@ -383,7 +384,7 @@ export const sendPropertyViewNotificationEmail = async (params: {
   propertyTitle: string;
   propertyUrl?: string;
 }): Promise<void> => {
-  const from = process.env.MAIL_FROM || 'Dekho Land <support@dekholand.com>';
+  const from = process.env.MAIL_FROM || 'Dekho Land <support@propertyla.com.my>';
   const leadName = params.leadName || 'A Dekho Land visitor';
 
   await sendEmail({
@@ -406,8 +407,8 @@ export const sendContactMessageEmail = async (params: {
   message: string;
   source?: string;
 }): Promise<void> => {
-  const from = process.env.MAIL_FROM || 'Dekho Land <support@dekholand.com>';
-  const to = process.env.CONTACT_TO_EMAIL || process.env.MAIL_TO || 'support@dekholand.com';
+  const from = process.env.MAIL_FROM || 'Dekho Land <support@propertyla.com.my>';
+  const to = process.env.CONTACT_TO_EMAIL || process.env.MAIL_TO || 'support@propertyla.com.my';
   const subject = params.subject?.trim() || 'New Dekho Land contact message';
   const safe = {
     name: escapeHtml(params.name),
