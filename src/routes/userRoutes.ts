@@ -3,24 +3,12 @@ import multer from 'multer';
 import { body } from 'express-validator';
 import { authenticateToken } from '../middleware/auth.js';
 import { uploadProfileImage, getProfile, updateProfile } from '../controllers/userController.js';
-import { AVATAR_IMAGE_MIME_TYPES, validateImageMimeType } from '../utils/imageValidation.js';
 
 // Use memory storage since files will be uploaded to S3
 const avatarStorage = multer.memoryStorage();
 
-const avatarFileFilter = (_req: any, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
-  try {
-    validateImageMimeType(file, AVATAR_IMAGE_MIME_TYPES);
-    cb(null, true);
-  } catch (error: any) {
-    cb(error);
-  }
-};
-
 const avatarUpload = multer({
-  storage: avatarStorage,
-  fileFilter: avatarFileFilter,
-  limits: { fileSize: 5 * 1024 * 1024 } // 5MB max for avatars
+  storage: avatarStorage
 });
 
 const router = Router();

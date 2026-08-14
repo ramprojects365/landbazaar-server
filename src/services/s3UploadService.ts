@@ -1,7 +1,6 @@
 import AWS from 'aws-sdk';
 import crypto from 'crypto';
 import sharp from 'sharp';
-import { validateImageFile } from '../utils/imageValidation.js';
 
 const s3Configured = Boolean(
   process.env.AWS_ACCESS_KEY_ID &&
@@ -21,7 +20,6 @@ const BUCKET_NAME = process.env.AWS_S3_BUCKET_NAME;
 const AWS_REGION = process.env.AWS_REGION || 'us-east-1';
 const AWS_CLOUDFRONT_URL = process.env.AWS_CLOUDFRONT_URL;
 
-const MAX_IMAGES = 15;
 let warnedMissingS3Config = false;
 
 interface UploadParams {
@@ -122,7 +120,6 @@ export const uploadImageToS3 = async (
   file: Express.Multer.File,
   folderPath: string = 'uploads'
 ): Promise<string> => {
-  await validateImageFile(file);
   return uploadValidatedImageToS3(file, folderPath);
 };
 
@@ -133,12 +130,6 @@ export const uploadMultipleImagesToS3 = async (
   files: Express.Multer.File[],
   folderPath: string = 'uploads'
 ): Promise<string[]> => {
-  if (files.length > MAX_IMAGES) {
-    throw new Error(`Maximum ${MAX_IMAGES} images allowed`);
-  }
-
-  await Promise.all(files.map(file => validateImageFile(file)));
-
   try {
     const uploadPromises = files.map(file => uploadValidatedImageToS3(file, folderPath));
     return await Promise.all(uploadPromises);

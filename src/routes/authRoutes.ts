@@ -4,7 +4,7 @@ import { register, login, getProfile, updateProfile, changePassword, forgotPassw
 import { authenticateToken } from '../middleware/auth.js';
 
 const router = express.Router();
-const ALPHANUMERIC_PASSWORD_REGEX = /^[A-Za-z0-9]{6,}$/;
+const PASSWORD_REGEX = /^[\x21-\x7E]{8,}$/;
 
 router.post(
   '/register',
@@ -15,8 +15,8 @@ router.post(
       .withMessage('Invalid email address')
       .normalizeEmail(),
     body('password')
-      .matches(ALPHANUMERIC_PASSWORD_REGEX)
-      .withMessage('Password must be at least 6 characters and contain only letters and numbers')
+      .matches(PASSWORD_REGEX)
+      .withMessage('Password must be at least 8 characters and cannot contain spaces or unicode characters')
   ],
   register
 );
@@ -32,8 +32,8 @@ router.post(
     body('password')
       .notEmpty()
       .withMessage('Password is required')
-      .matches(ALPHANUMERIC_PASSWORD_REGEX)
-      .withMessage('Password must be at least 6 characters and contain only letters and numbers')
+      .matches(PASSWORD_REGEX)
+      .withMessage('Password must be at least 8 characters and cannot contain spaces or unicode characters')
   ],
   login
 );
@@ -93,13 +93,13 @@ router.put(
 
 const changePasswordValidation = [
   body('oldPassword').optional().notEmpty().withMessage('Old password is required')
-    .matches(ALPHANUMERIC_PASSWORD_REGEX).withMessage('Old password must be at least 6 characters and alphanumeric only'),
+    .matches(PASSWORD_REGEX).withMessage('Old password must be at least 8 characters and cannot contain spaces or unicode characters'),
   body('old_password').optional().notEmpty().withMessage('Old password is required')
-    .matches(ALPHANUMERIC_PASSWORD_REGEX).withMessage('Old password must be at least 6 characters and alphanumeric only'),
+    .matches(PASSWORD_REGEX).withMessage('Old password must be at least 8 characters and cannot contain spaces or unicode characters'),
   body('newPassword').optional()
-    .matches(ALPHANUMERIC_PASSWORD_REGEX).withMessage('New password must be at least 6 characters and alphanumeric only'),
+    .matches(PASSWORD_REGEX).withMessage('New password must be at least 8 characters and cannot contain spaces or unicode characters'),
   body('new_password').optional()
-    .matches(ALPHANUMERIC_PASSWORD_REGEX).withMessage('New password must be at least 6 characters and alphanumeric only'),
+    .matches(PASSWORD_REGEX).withMessage('New password must be at least 8 characters and cannot contain spaces or unicode characters'),
 ];
 
 router.put('/change-password', authenticateToken, changePasswordValidation, changePassword);
@@ -125,12 +125,12 @@ router.post(
       .withMessage('Reset token is required'),
     body('newPassword')
       .optional()
-      .matches(ALPHANUMERIC_PASSWORD_REGEX)
-      .withMessage('New password must be at least 6 characters and alphanumeric only'),
+      .matches(PASSWORD_REGEX)
+      .withMessage('New password must be at least 8 characters and cannot contain spaces or unicode characters'),
     body('new_password')
       .optional()
-      .matches(ALPHANUMERIC_PASSWORD_REGEX)
-      .withMessage('New password must be at least 6 characters and alphanumeric only')
+      .matches(PASSWORD_REGEX)
+      .withMessage('New password must be at least 8 characters and cannot contain spaces or unicode characters')
   ],
   resetPassword
 );

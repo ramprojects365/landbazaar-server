@@ -14,7 +14,7 @@ const JWT_EXPIRY = process.env.JWT_EXPIRY || '7d';
 const REN_NUMBER_PATTERN = /^(REN|PEA)\d{4,6}$/;
 const VERIFIED_REN_STATUS = 'verified';
 const NOT_VERIFIED_REN_STATUS = 'not_verified';
-const PASSWORD_REGEX = /^[A-Za-z0-9]{6,}$/;
+const PASSWORD_REGEX = /^[\x21-\x7E]{8,}$/;
 
 if (!process.env.JWT_SECRET) {
   throw new Error('JWT_SECRET environment variable is required');
@@ -79,7 +79,7 @@ const validatePassword = (value: string, label: string): void => {
   if (!PASSWORD_REGEX.test(value)) {
     throw {
       status: 400,
-      message: `${label} must be at least 6 characters and contain only letters and numbers`
+      message: `${label} must be at least 8 characters and cannot contain spaces or unicode characters`
     } as ServiceError;
   }
 };

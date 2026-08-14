@@ -1,31 +1,16 @@
 import multer from 'multer';
-import { Request } from 'express';
 import * as s3Service from './s3UploadService.js';
-import { PROPERTY_IMAGE_MIME_TYPES, validateImageMimeType } from '../utils/imageValidation.js';
 
 // Configure multer for memory storage (files will be uploaded to S3, not disk)
 const storage = multer.memoryStorage();
 
-const fileFilter = (req: Request, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
-  try {
-    validateImageMimeType(file, PROPERTY_IMAGE_MIME_TYPES);
-    cb(null, true);
-  } catch (error: any) {
-    cb(error);
-  }
-};
-
 export const upload = multer({
-  storage,
-  fileFilter,
-  limits: {
-    fileSize: 5 * 1024 * 1024  // 5MB max
-  }
+  storage
 });
 
 export const uploadAny = () => upload.any();
 export const uploadSingle = (fieldName: string = 'images') => upload.single(fieldName);
-export const uploadArray = (fieldName: string = 'images', maxCount: number = 15) => upload.array(fieldName, maxCount);
+export const uploadArray = (fieldName: string = 'images') => upload.array(fieldName);
 export const uploadFields = (fields: multer.Field[]) => upload.fields(fields);
 
 /**
