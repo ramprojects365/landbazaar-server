@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import * as propertyService from '../services/propertyService.js';
 import * as propertyFitService from '../services/propertyFitService.js';
-import { Property, PropertyImage } from '../entities/Property.js';
+import { Property, PropertyDocument, PropertyImage } from '../entities/Property.js';
 import { AppError } from '../utils/errors.js';
 import { parseIndianPriceValue } from '../utils/priceParsing.js';
 
@@ -108,6 +108,21 @@ const normalizeImageItem = (value: unknown, index: number): string | PropertyIma
   };
 };
 
+const normalizeDocumentItem = (value: unknown): PropertyDocument | null => {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+
+  const document = value as Record<string, unknown>;
+  const rawUrl = document.url ?? document.documentUrl;
+  if (typeof rawUrl !== 'string' || !rawUrl.trim()) return null;
+
+  return {
+    url: rawUrl.trim(),
+    fileName: typeof document.fileName === 'string' ? document.fileName : undefined,
+    mimeType: typeof document.mimeType === 'string' ? document.mimeType : undefined,
+    size: typeof document.size === 'number' ? document.size : undefined
+  };
+};
+
 type PropertyBodyField = keyof Pick<
   Property,
   | 'title'
@@ -128,6 +143,7 @@ type PropertyBodyField = keyof Pick<
   | 'status'
   | 'negotiable'
   | 'images'
+  | 'documents'
   | 'amenities'
   | 'price'
   | 'buildupArea'
@@ -187,6 +203,7 @@ const propertyBodyKeys: Record<PropertyBodyField, string[]> = {
   status: ['status'],
   negotiable: ['negotiable'],
   images: ['images'],
+  documents: ['documents'],
   amenities: ['amenities'],
   price: ['price'],
   buildupArea: ['buildupArea', 'buildup_area'],
@@ -319,6 +336,13 @@ const buildPropertyPayload = (
         isCover: shouldBeCover
       };
     });
+  }
+
+  const documents = getBodyValue(body, 'documents');
+  if (Array.isArray(documents)) {
+    propertyData.documents = documents
+      .map((document) => normalizeDocumentItem(document))
+      .filter((document): document is PropertyDocument => document !== null);
   }
 
   const amenities = normalizeAmenities(getBodyValue(body, 'amenities'));

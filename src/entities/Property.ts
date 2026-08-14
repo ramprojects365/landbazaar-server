@@ -20,6 +20,13 @@ export interface PropertyImage {
   isCover?: boolean;
 }
 
+export interface PropertyDocument {
+  url: string;
+  fileName?: string;
+  mimeType?: string;
+  size?: number;
+}
+
 @Entity('properties')
 export class Property {
   @PrimaryGeneratedColumn('uuid')
@@ -448,6 +455,12 @@ export class Property {
     nullable: true
   })
   images?: Array<string | PropertyImage>;
+
+  @Column({
+    type: 'jsonb',
+    nullable: true
+  })
+  documents?: PropertyDocument[];
 
   @Column({
     type: 'varchar',

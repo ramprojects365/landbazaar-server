@@ -198,24 +198,30 @@ export const sendPropertyFitListEmail = async (
   }, 'Property fit list');
 };
 
-const getClientLoginUrl = (): string => {
+const getPublicClientUrl = (): string => {
+  const configuredUrl = process.env.PUBLIC_WEB_URL || process.env.PUBLIC_CLIENT_URL || process.env.CLIENT_URL;
+  const configuredHost = configuredUrl ? new URL(configuredUrl).hostname : '';
+  const isRailwayHost = configuredHost.endsWith('.railway.app') || configuredHost.endsWith('.up.railway.app');
   const clientUrl =
-    process.env.PUBLIC_CLIENT_URL ||
-    process.env.CLIENT_URL ||
-    (process.env.NODE_ENV === 'production' ? undefined : 'http://localhost:3000') ||
-    'https://www.dekholand.com';
+    configuredUrl && !isRailwayHost
+      ? configuredUrl
+      : process.env.NODE_ENV === 'production'
+        ? 'https://www.dekholand.com'
+        : 'http://localhost:3000';
 
-  return `${clientUrl.replace(/\/$/, '')}/sign-in`;
+  return clientUrl.replace(/\/$/, '');
+};
+
+const getClientLoginUrl = (): string => {
+  const clientUrl = getPublicClientUrl();
+
+  return `${clientUrl}/sign-in`;
 };
 
 const getClientResetPasswordUrl = (token: string): string => {
-  const clientUrl =
-    process.env.PUBLIC_CLIENT_URL ||
-    process.env.CLIENT_URL ||
-    (process.env.NODE_ENV === 'production' ? undefined : 'http://localhost:3000') ||
-    'https://www.dekholand.com';
+  const clientUrl = getPublicClientUrl();
 
-  return `${clientUrl.replace(/\/$/, '')}/reset-password?token=${encodeURIComponent(token)}`;
+  return `${clientUrl}/reset-password?token=${encodeURIComponent(token)}`;
 };
 
 const buildResetPasswordHtml = (username: string, resetUrl: string): string => {

@@ -73,7 +73,8 @@ Set these in backend service:
 - NODE_ENV=production
 - JWT_SECRET=your-long-random-secret
 - JWT_EXPIRY=7d
-- PUBLIC_CLIENT_URL=https://your-frontend-domain
+- PUBLIC_WEB_URL=https://www.dekholand.com
+- PUBLIC_API_URL=https://your-railway-api-domain
 
 Database values:
 - Prefer DATABASE_URL from Railway Postgres

@@ -80,6 +80,34 @@ const buildImageUrl = (key: string, bucketName?: string): string => {
   return `${publicBaseUrl.replace(/\/$/, '')}/${key}`;
 };
 
+export const uploadFileToS3 = async (
+  file: Express.Multer.File,
+  folderPath: string = 'uploads'
+): Promise<string> => {
+  const bucketName = getBucketName();
+  const timestamp = Date.now();
+  const uniqueId = generateUniqueIdentifier();
+  const originalExtension = file.originalname.match(/\.[A-Za-z0-9]+$/)?.[0].toLowerCase() || '';
+  const key = `${folderPath}/${timestamp}-${uniqueId}${originalExtension}`;
+
+  if (!s3 || !BUCKET_NAME) {
+    return buildImageUrl(key);
+  }
+
+  try {
+    await s3.upload({
+      Bucket: bucketName,
+      Key: key,
+      Body: file.buffer,
+      ContentType: file.mimetype || 'application/octet-stream'
+    }).promise();
+    return buildImageUrl(key, bucketName);
+  } catch (error) {
+    console.error('File upload error:', error);
+    throw new Error(`Failed to upload file to S3: ${error}`);
+  }
+};
+
 const uploadValidatedImageToS3 = async (
   file: Express.Multer.File,
   folderPath: string = 'uploads'
