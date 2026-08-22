@@ -1,9 +1,9 @@
 -- Create users table for authentication
 CREATE TABLE IF NOT EXISTS users (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  username VARCHAR(30) UNIQUE NOT NULL,
+  username VARCHAR(100) NOT NULL,
   email VARCHAR(255) UNIQUE NOT NULL,
-  phone_number VARCHAR(20) UNIQUE,
+  phone_number VARCHAR(20),
   user_type VARCHAR(30),
   ren_number VARCHAR(50),
   ren_status VARCHAR(30) DEFAULT 'not_verified',

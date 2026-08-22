@@ -13,6 +13,7 @@
     "setup-db": "node scripts/setup-db.js",
     "seed-db": "node scripts/seed-db.js",
     "setup-and-seed-db": "npm run setup-db && npm run seed-db",
+    "drop-unique-constraints": "node scripts/drop-users-unique-constraints.js",
     "test": "node test-api.js"
   },
   "keywords": [

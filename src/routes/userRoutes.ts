@@ -22,8 +22,8 @@ const profileValidation = [
   body('icPassport').optional({ nullable: true }).trim(),
   body('designation').optional({ nullable: true }).trim(),
   body('experience').optional({ nullable: true }).isInt({ min: 0 }).withMessage('Experience must be a positive number'),
-  body('username').optional().trim().isLength({ min: 3, max: 30 }).withMessage('Username must be between 3 and 30 characters'),
-  body('user_name').optional().trim().isLength({ min: 3, max: 30 }).withMessage('Username must be between 3 and 30 characters'),
+  body('username').optional().trim().isLength({ min: 2, max: 60 }).withMessage('Username must be between 2 and 60 characters'),
+  body('user_name').optional().trim().isLength({ min: 2, max: 60 }).withMessage('Username must be between 2 and 60 characters'),
   body('phoneNumber').optional({ nullable: true }).trim(),
   body('phone_number').optional({ nullable: true }).trim()
 ];

@@ -289,13 +289,6 @@ export const updateUserProfile = async (
     updates.renStatus = NOT_VERIFIED_REN_STATUS;
   }
 
-  if (updates.username) {
-    const existing = await userRepository.findUserByUsername(updates.username);
-    if (existing && existing.id !== userId) {
-      throw { status: 400, message: 'Username already taken' } as ServiceError;
-    }
-  }
-
   const updated = await userRepository.updateUser(userId, updates);
 
   return withRenVerification({

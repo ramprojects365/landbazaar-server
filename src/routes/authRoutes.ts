@@ -70,13 +70,13 @@ router.put(
     body('username')
       .optional()
       .trim()
-      .isLength({ min: 3, max: 30 })
-      .withMessage('Username must be between 3 and 30 characters'),
+      .isLength({ min: 2, max: 60 })
+      .withMessage('Username must be between 2 and 60 characters'),
     body('user_name')
       .optional()
       .trim()
-      .isLength({ min: 3, max: 30 })
-      .withMessage('Username must be between 3 and 30 characters'),
+      .isLength({ min: 2, max: 60 })
+      .withMessage('Username must be between 2 and 60 characters'),
     body('phone_number')
       .optional({ nullable: true })
       .trim()
