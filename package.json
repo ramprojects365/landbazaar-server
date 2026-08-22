@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "build": "tsc",
+    "prestart": "node scripts/backfill-users-username.js",
     "start": "node dist/start.js",
     "start:typeorm": "npm run build && node dist/server.js",
     "dev": "tsc && node --watch dist/server.js",
@@ -14,6 +15,7 @@
     "seed-db": "node scripts/seed-db.js",
     "setup-and-seed-db": "npm run setup-db && npm run seed-db",
     "drop-unique-constraints": "node scripts/drop-users-unique-constraints.js",
+    "backfill-username": "node scripts/backfill-users-username.js",
     "test": "node test-api.js"
   },
   "keywords": [

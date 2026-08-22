@@ -7,12 +7,16 @@ const { Client } = pkg;
 
 const databaseUrl = process.env.DATABASE_URL || process.env.DATABASE_PUBLIC_URL;
 const parsedPort = process.env.DB_PORT ? parseInt(process.env.DB_PORT, 10) : undefined;
+const useSsl =
+  process.env.DB_SSL === 'true' ||
+  Boolean(process.env.DATABASE_PUBLIC_URL && databaseUrl === process.env.DATABASE_PUBLIC_URL) ||
+  Boolean(databaseUrl && !databaseUrl.includes('localhost') && !databaseUrl.includes('127.0.0.1'));
 
 const client = new Client(
   databaseUrl
     ? {
         connectionString: databaseUrl,
-        ssl: { rejectUnauthorized: false }
+        ssl: useSsl ? { rejectUnauthorized: false } : false
       }
     : {
         host: process.env.DB_HOST || 'localhost',
@@ -20,7 +24,7 @@ const client = new Client(
         user: process.env.DB_USER || 'postgres',
         password: process.env.DB_PASSWORD,
         database: process.env.DB_NAME || 'auth_db',
-        ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false
+        ssl: useSsl ? { rejectUnauthorized: false } : false
       }
 );
 
@@ -29,6 +33,21 @@ async function dropUniqueConstraints() {
 
   try {
     console.log('Checking for unique constraints on users(username) and users(phone_number)...');
+
+    // 1. Check if 'users' table exists
+    const hasUsersTable = await client.query(`
+      SELECT EXISTS (
+        SELECT 1
+        FROM information_schema.tables
+        WHERE table_schema = 'public'
+          AND table_name = 'users'
+      ) AS exists;
+    `);
+
+    if (!hasUsersTable.rows[0]?.exists) {
+      console.log('Users table does not exist yet. Nothing to modify.');
+      return;
+    }
 
     // Query all unique constraints on users table for username and phone_number columns
     const constraintsQuery = `
@@ -71,8 +90,31 @@ async function dropUniqueConstraints() {
       await client.query(`DROP INDEX IF EXISTS "${row.indexname}";`);
     }
 
-    // Expand username column length to 100 if needed
-    await client.query('ALTER TABLE users ALTER COLUMN username TYPE VARCHAR(100);');
+    // Check if username column exists
+    const hasUsernameColumn = await client.query(`
+      SELECT EXISTS (
+        SELECT 1
+        FROM information_schema.columns
+        WHERE table_schema = 'public'
+          AND table_name = 'users'
+          AND column_name = 'username'
+      ) AS exists;
+    `);
+
+    if (hasUsernameColumn.rows[0]?.exists) {
+      // Backfill any NULL/empty values first
+      await client.query(`
+        UPDATE users
+        SET username = COALESCE(
+          NULLIF(BTRIM(split_part(email, '@', 1)), ''),
+          CONCAT('user_', SUBSTRING(id::text, 1, 8))
+        )
+        WHERE username IS NULL OR BTRIM(username) = '';
+      `);
+
+      // Expand username column length to 100 if needed
+      await client.query('ALTER TABLE users ALTER COLUMN username TYPE VARCHAR(100);');
+    }
 
     console.log('Users table updated: username and phone_number can now have duplicate values.');
   } catch (error) {
