@@ -423,12 +423,16 @@ export const sendPropertyViewNotificationEmail = async (params: {
     await sendEmail({
       from,
       to: params.to,
-      subject: `${params.buyerName} saved ${params.propertyTitle}`,
+      subject: `${params.buyerName} liked ${params.propertyTitle}`,
       html: `<p>Hi ${escapeHtml(params.sellerName || 'seller')},</p>
-        <p><strong>${safeBuyerName}</strong> saved your property <strong>${safePropertyTitle}</strong>.</p>
+        <p><strong>${safeBuyerName}</strong> liked your property <strong>${safePropertyTitle}</strong>.</p>
         <p>Email: ${safeBuyerEmail}<br/>Phone: ${safeBuyerPhone}</p>
-        ${params.propertyUrl ? `<p><a href="${params.propertyUrl}">Open property</a></p>` : ''}`,
-      text: `${params.buyerName} saved ${params.propertyTitle}. Email: ${params.buyerEmail || 'Not provided'}, Phone: ${params.buyerPhone || 'Not provided'}${params.propertyUrl ? `, Property: ${params.propertyUrl}` : ''}`,
+        ${params.propertyUrl ? `<p><a href="${params.propertyUrl}">Open property</a></p>` : ''}
+        <p>Regards,<br />Dekholand team</p>`,
+      text: `${params.buyerName} liked ${params.propertyTitle}. Email: ${params.buyerEmail || 'Not provided'}, Phone: ${params.buyerPhone || 'Not provided'}${params.propertyUrl ? `, Property: ${params.propertyUrl}` : ''}
+
+  Regards,
+  Dekholand team`,
     }, 'Property favourite notification');
   };
 
