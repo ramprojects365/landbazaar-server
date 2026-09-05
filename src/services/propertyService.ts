@@ -154,7 +154,7 @@ export const getUserProperties = async (userId: string): Promise<Property[]> => 
 };
 
 export const getAdminProperties = async (): Promise<Property[]> => {
-  return await propertyRepository.findAllProperties({ status: '' });
+  return await propertyRepository.findAllProperties({ status: 'active' });
 };
 
 export const recordPropertyView = async (input: {
