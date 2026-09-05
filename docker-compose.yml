@@ -17,5 +17,40 @@ services:
       timeout: 5s
       retries: 5
 
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: landbazaar-api
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 3008
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env before starting Docker}
+      JWT_EXPIRY: ${JWT_EXPIRY:-7d}
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: auth_db
+      DB_SSL: "false"
+      PUBLIC_WEB_URL: ${PUBLIC_WEB_URL:-http://localhost:3000}
+      PUBLIC_CLIENT_URL: ${PUBLIC_CLIENT_URL:-http://localhost:3000}
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      EMAIL_FROM: ${EMAIL_FROM:-noreply@example.com}
+      AWS_REGION: ${AWS_REGION:-}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-}
+      AWS_S3_BUCKET_NAME: ${AWS_S3_BUCKET_NAME:-}
+      AWS_CLOUDFRONT_URL: ${AWS_CLOUDFRONT_URL:-}
+    ports:
+      - "${API_PORT:-3008}:3008"
+    volumes:
+      - uploads_data:/app/uploads
+
 volumes:
   postgres_data:
+  uploads_data:
