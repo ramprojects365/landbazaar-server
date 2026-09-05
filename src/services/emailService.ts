@@ -405,6 +405,33 @@ export const sendPropertyViewNotificationEmail = async (params: {
   }, 'Property view notification');
 };
 
+  export const sendPropertyFavouriteNotificationEmail = async (params: {
+    to: string;
+    sellerName?: string | null;
+    buyerName: string;
+    buyerEmail?: string;
+    buyerPhone?: string;
+    propertyTitle: string;
+    propertyUrl?: string;
+  }): Promise<void> => {
+    const from = process.env.MAIL_FROM || 'Dekho Land <support@propertyla.com.my>';
+    const safeBuyerName = escapeHtml(params.buyerName);
+    const safePropertyTitle = escapeHtml(params.propertyTitle);
+    const safeBuyerEmail = escapeHtml(params.buyerEmail || 'Not provided');
+    const safeBuyerPhone = escapeHtml(params.buyerPhone || 'Not provided');
+
+    await sendEmail({
+      from,
+      to: params.to,
+      subject: `${params.buyerName} saved ${params.propertyTitle}`,
+      html: `<p>Hi ${escapeHtml(params.sellerName || 'seller')},</p>
+        <p><strong>${safeBuyerName}</strong> saved your property <strong>${safePropertyTitle}</strong>.</p>
+        <p>Email: ${safeBuyerEmail}<br/>Phone: ${safeBuyerPhone}</p>
+        ${params.propertyUrl ? `<p><a href="${params.propertyUrl}">Open property</a></p>` : ''}`,
+      text: `${params.buyerName} saved ${params.propertyTitle}. Email: ${params.buyerEmail || 'Not provided'}, Phone: ${params.buyerPhone || 'Not provided'}${params.propertyUrl ? `, Property: ${params.propertyUrl}` : ''}`,
+    }, 'Property favourite notification');
+  };
+
 export const sendContactMessageEmail = async (params: {
   name: string;
   email: string;

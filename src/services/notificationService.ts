@@ -99,6 +99,36 @@ export const createPropertyFitMatchNotification = async (
   });
 };
 
+export const createPropertyFavouriteNotification = async (input: {
+  property: Property;
+  viewerName?: string;
+  viewerEmail?: string;
+  viewerPhone?: string;
+  propertyUrl?: string;
+}) => {
+  if (!input.property.userId) {
+    return null;
+  }
+
+  const viewerName = getDisplayName(input.viewerName, input.viewerEmail);
+  const propertyTitle = getPropertyTitle(input.property);
+
+  return await notificationRepository.createNotification({
+    recipientId: input.property.userId,
+    propertyId: input.property.id,
+    type: 'property_favourite',
+    title: 'Property saved',
+    message: `${viewerName} saved ${propertyTitle}`,
+    actorName: viewerName,
+    actorEmail: clean(input.viewerEmail) || null,
+    actorPhone: clean(input.viewerPhone) || null,
+    metadata: {
+      propertyTitle,
+      propertyUrl: clean(input.propertyUrl) || null
+    }
+  });
+};
+
 export const getUserNotifications = async (
   userId: string,
   options: { unreadOnly?: boolean; limit?: number } = {}

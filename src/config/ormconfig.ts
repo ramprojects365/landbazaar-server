@@ -4,6 +4,8 @@ import dotenv from 'dotenv';
 import { User } from '../entities/User.js';
 import { Property } from '../entities/Property.js';
 import { Notification } from '../entities/Notification.js';
+import { PropertyView } from '../entities/PropertyView.js';
+import { PropertyFavourite } from '../entities/PropertyFavourite.js';
 
 dotenv.config();
 
@@ -31,7 +33,7 @@ export const AppDataSource = new DataSource({
   ...connectionOptions,
   synchronize: true,
   logging: process.env.NODE_ENV === 'development',
-  entities: [User, Property, Notification],
+  entities: [User, Property, Notification, PropertyView, PropertyFavourite],
 });
 
 export const initializeDatabase = async (): Promise<DataSource> => {

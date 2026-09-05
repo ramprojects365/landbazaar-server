@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import * as propertyService from '../services/propertyService.js';
 import * as propertyFitService from '../services/propertyFitService.js';
+import * as propertyEngagementService from '../services/propertyEngagementService.js';
 import { Property, PropertyDocument, PropertyImage } from '../entities/Property.js';
 import { AppError } from '../utils/errors.js';
 import { parseIndianPriceValue } from '../utils/priceParsing.js';
@@ -785,11 +786,15 @@ export const recordPropertyView = async (req: Request, res: Response): Promise<v
       return;
     }
 
-    const result = await propertyFitService.notifyPropertyViewed({
+    const viewerId = (req as any).user?.id as string | undefined;
+    const visitorKey = typeof req.body?.visitorKey === 'string'
+      ? req.body.visitorKey.trim()
+      : undefined;
+    const result = await propertyService.recordPropertyView({
       propertyId,
-      contact: req.body?.contact,
-      propertyUrl: req.body?.propertyUrl
-    }, { sendEmail: false });
+      viewerId,
+      visitorKey
+    });
 
     res.status(200).json({
       success: true,
@@ -830,5 +835,91 @@ export const createOrLoginPropertyFitLead = async (req: Request, res: Response):
         message: 'Failed to create property fit lead'
       });
     }
+  }
+};
+
+const requireAuthenticatedUserId = (req: Request): string => {
+  const userId = (req as any).user?.id as string | undefined;
+  if (!userId) {
+    throw new AppError('User not authenticated', 401);
+  }
+  return userId;
+};
+
+export const saveProperty = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = requireAuthenticatedUserId(req);
+    const propertyId = req.params.id;
+    if (!propertyId || !isValidUuid(propertyId)) {
+      res.status(400).json({ success: false, message: 'Invalid property ID' });
+      return;
+    }
+
+    const result = await propertyEngagementService.saveProperty(
+      propertyId,
+      userId,
+      req.body?.propertyUrl
+    );
+    res.status(200).json({ success: true, data: result });
+  } catch (error: any) {
+    const status = error instanceof AppError ? error.status : 500;
+    res.status(status).json({
+      success: false,
+      message: error instanceof AppError ? error.message : 'Failed to save property'
+    });
+  }
+};
+
+export const removeSavedProperty = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = requireAuthenticatedUserId(req);
+    const propertyId = req.params.id;
+    if (!propertyId || !isValidUuid(propertyId)) {
+      res.status(400).json({ success: false, message: 'Invalid property ID' });
+      return;
+    }
+
+    const result = await propertyEngagementService.removeSavedProperty(propertyId, userId);
+    res.status(200).json({ success: true, data: result });
+  } catch (error: any) {
+    const status = error instanceof AppError ? error.status : 500;
+    res.status(status).json({
+      success: false,
+      message: error instanceof AppError ? error.message : 'Failed to remove saved property'
+    });
+  }
+};
+
+export const getSavedProperties = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = requireAuthenticatedUserId(req);
+    const properties = await propertyEngagementService.getSavedProperties(userId);
+    res.status(200).json({ success: true, count: properties.length, data: properties });
+  } catch (error: any) {
+    const status = error instanceof AppError ? error.status : 500;
+    res.status(status).json({
+      success: false,
+      message: error instanceof AppError ? error.message : 'Failed to fetch saved properties'
+    });
+  }
+};
+
+export const getSavedStatus = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = requireAuthenticatedUserId(req);
+    const propertyId = req.params.id;
+    if (!propertyId || !isValidUuid(propertyId)) {
+      res.status(400).json({ success: false, message: 'Invalid property ID' });
+      return;
+    }
+
+    const result = await propertyEngagementService.getSavedStatus(propertyId, userId);
+    res.status(200).json({ success: true, data: result });
+  } catch (error: any) {
+    const status = error instanceof AppError ? error.status : 500;
+    res.status(status).json({
+      success: false,
+      message: error instanceof AppError ? error.message : 'Failed to fetch saved status'
+    });
   }
 };

@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import * as propertyController from '../controllers/propertyController.js';
-import { authenticateToken } from '../middleware/auth.js';
+import { authenticateToken, optionalAuthenticateToken } from '../middleware/auth.js';
 
 const router = Router();
 
@@ -13,9 +13,13 @@ router.post('/fit/view', propertyController.notifyPropertyFitView);
 router.get('/', propertyController.getAllProperties);
 
 router.get('/my-properties', authenticateToken, propertyController.getUserProperties);
+router.get('/favourites', authenticateToken, propertyController.getSavedProperties);
 
 router.get('/:id', propertyController.getPropertyById);
-router.post('/:id/view', propertyController.recordPropertyView);
+router.post('/:id/view', optionalAuthenticateToken, propertyController.recordPropertyView);
+router.post('/:id/favourite', authenticateToken, propertyController.saveProperty);
+router.delete('/:id/favourite', authenticateToken, propertyController.removeSavedProperty);
+router.get('/:id/favourite-status', authenticateToken, propertyController.getSavedStatus);
 
 router.post('/', authenticateToken, propertyController.createProperty);
 

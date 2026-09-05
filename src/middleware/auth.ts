@@ -67,3 +67,32 @@ export const authenticateToken = async (req: Request, res: Response, next: NextF
     });
   }
 };
+
+export const optionalAuthenticateToken = async (
+  req: Request,
+  _res: Response,
+  next: NextFunction
+): Promise<void> => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (!token) {
+    next();
+    return;
+  }
+
+  try {
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret) {
+      next();
+      return;
+    }
+
+    const decoded = jwt.verify(token, jwtSecret) as JWTPayload;
+    req.user = await authService.validateToken(decoded.userId);
+  } catch {
+    // Invalid optional credentials are treated as an anonymous visitor.
+  }
+
+  next();
+};

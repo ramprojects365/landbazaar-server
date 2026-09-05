@@ -9,7 +9,7 @@ import {
 import { User } from './User.js';
 import { Property } from './Property.js';
 
-export type NotificationType = 'property_view' | 'property_fit_match';
+export type NotificationType = 'property_view' | 'property_fit_match' | 'property_favourite';
 
 @Entity('notifications')
 export class Notification {

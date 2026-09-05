@@ -2,6 +2,7 @@ import { AppDataSource } from '../config/database.js';
 import { Property } from '../entities/Property.js';
 import { AppError } from '../utils/errors.js';
 import { FindOptionsWhere, ILike, MoreThanOrEqual, LessThanOrEqual, Equal } from 'typeorm';
+import * as propertyEngagementRepository from './propertyEngagementRepository.js';
 
 export interface PropertyFilters {
   listingType?: string;
@@ -198,11 +199,23 @@ export const findAllProperties = async (filters?: PropertyFilters): Promise<Prop
 
 export const findPropertiesByUserId = async (userId: string): Promise<Property[]> => {
   const propertyRepository = AppDataSource.getRepository(Property);
-  return await propertyRepository.find({
+  const properties = await propertyRepository.find({
     where: { userId, status: 'active' },
     order: { createdAt: 'DESC' },
     relations: ['user']
   });
+
+  const stats = await propertyEngagementRepository.getPropertyEngagementStatsForProperties(
+    properties.map((property) => property.id)
+  );
+
+  return properties.map((property) =>
+    Object.assign(property, stats.get(property.id) || {
+      viewCount: 0,
+      uniqueViewCount: 0,
+      favouriteCount: 0
+    })
+  );
 };
 
 export const updateProperty = async (

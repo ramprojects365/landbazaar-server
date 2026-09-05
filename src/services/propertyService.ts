@@ -2,6 +2,7 @@ import * as propertyRepository from '../repositories/propertyRepository.js';
 import { Property } from '../entities/Property.js';
 import { PropertyFilters } from '../repositories/propertyRepository.js';
 import { AppError } from '../utils/errors.js';
+import * as propertyEngagementRepository from '../repositories/propertyEngagementRepository.js';
 
 const validatePropertyData = (data: Partial<Property>): void => {
   if (data.title !== undefined && data.title.trim().length === 0) {
@@ -150,6 +151,28 @@ export const getAllProperties = async (filters?: PropertyFilters): Promise<Prope
 
 export const getUserProperties = async (userId: string): Promise<Property[]> => {
   return await propertyRepository.findPropertiesByUserId(userId);
+};
+
+export const recordPropertyView = async (input: {
+  propertyId: string;
+  viewerId?: string;
+  visitorKey?: string;
+}) => {
+  const property = await propertyRepository.findPropertyById(input.propertyId);
+
+  if (!property) {
+    throw new AppError('Property not found', 404);
+  }
+
+  if (input.viewerId && property.userId === input.viewerId) {
+    return { recorded: false, ignored: 'seller_view' };
+  }
+
+  if (!input.viewerId && !input.visitorKey) {
+    throw new AppError('Visitor key is required for anonymous views', 400);
+  }
+
+  return await propertyEngagementRepository.recordPropertyView(input);
 };
 
 export const updateProperty = async (
