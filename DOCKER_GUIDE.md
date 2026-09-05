@@ -89,6 +89,32 @@ Invoke-RestMethod http://localhost:3008/api/properties
 
 The root request should return JSON containing `"success": true`. If `/api/properties` returns an empty list, the API is working and the local database simply has no properties yet.
 
+## Create an administrator
+
+After registering the administrator account, promote it directly in the local PostgreSQL database:
+
+```sql
+UPDATE users
+SET user_type = 'admin'
+WHERE email = 'admin@example.com';
+```
+
+To remove administrator access:
+
+```sql
+UPDATE users
+SET user_type = 'user'
+WHERE email = 'admin@example.com';
+```
+
+From the `landbazaar-server` directory, open a PostgreSQL shell in Docker with:
+
+```powershell
+docker compose exec postgres psql -U postgres -d auth_db
+```
+
+An administrator can view all properties, edit any property, and deactivate any property from the dashboard. The backend checks the role on every protected request; hiding the dashboard link is not used as a security control.
+
 ## Connect the local frontend
 
 The frontend defaults to the deployed API unless its local environment is configured. In `landbazaar-client`, create `.env.local` with:

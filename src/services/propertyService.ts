@@ -153,6 +153,10 @@ export const getUserProperties = async (userId: string): Promise<Property[]> => 
   return await propertyRepository.findPropertiesByUserId(userId);
 };
 
+export const getAdminProperties = async (): Promise<Property[]> => {
+  return await propertyRepository.findAllProperties({ status: '' });
+};
+
 export const recordPropertyView = async (input: {
   propertyId: string;
   viewerId?: string;
@@ -178,7 +182,8 @@ export const recordPropertyView = async (input: {
 export const updateProperty = async (
   propertyId: string,
   userId: string,
-  updates: Partial<Property>
+  updates: Partial<Property>,
+  isAdmin = false
 ): Promise<Property> => {
   const property = await propertyRepository.findPropertyById(propertyId);
 
@@ -186,7 +191,7 @@ export const updateProperty = async (
     throw new AppError('Property not found', 404);
   }
 
-  if (property.userId !== userId) {
+  if (!isAdmin && property.userId !== userId) {
     throw new AppError('You are not authorized to update this property', 403);
   }
 
@@ -201,14 +206,18 @@ export const updateProperty = async (
   return updatedProperty;
 };
 
-export const deleteProperty = async (propertyId: string, userId: string): Promise<Property> => {
+export const deleteProperty = async (
+  propertyId: string,
+  userId: string,
+  isAdmin = false
+): Promise<Property> => {
   const property = await propertyRepository.findPropertyById(propertyId);
 
   if (!property) {
     throw new AppError('Property not found', 404);
   }
 
-  if (property.userId !== userId) {
+  if (!isAdmin && property.userId !== userId) {
     throw new AppError('You are not authorized to delete this property', 403);
   }
 

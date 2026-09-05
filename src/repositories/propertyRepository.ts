@@ -12,7 +12,7 @@ export interface PropertyFilters {
   availability?: 'Immediate' | 'Next month' | 'Under Construction';
   cityName?: string;
   state?: string;
-  status?: string;
+  status?: string | null;
   userId?: string;
   minPrice?: number;
   maxPrice?: number;
@@ -83,7 +83,9 @@ export const findAllProperties = async (filters?: PropertyFilters): Promise<Prop
 
   // Default to active status if not specified
   const statusFilter = filters?.status !== undefined ? filters.status : 'active';
-  queryBuilder.andWhere('property.status = :status', { status: statusFilter });
+  if (statusFilter) {
+    queryBuilder.andWhere('property.status = :status', { status: statusFilter });
+  }
 
   if (filters) {
     if (filters.listingType) {

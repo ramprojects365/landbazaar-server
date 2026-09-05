@@ -68,6 +68,20 @@ export const authenticateToken = async (req: Request, res: Response, next: NextF
   }
 };
 
+export const requireAdmin = (req: Request, res: Response, next: NextFunction): void => {
+  const userType = req.user?.userType?.trim().toLowerCase();
+
+  if (userType !== 'admin') {
+    res.status(403).json({
+      success: false,
+      message: 'Administrator access required'
+    });
+    return;
+  }
+
+  next();
+};
+
 export const optionalAuthenticateToken = async (
   req: Request,
   _res: Response,

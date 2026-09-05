@@ -574,6 +574,23 @@ export const getUserProperties = async (req: Request, res: Response): Promise<vo
   }
 };
 
+export const getAdminProperties = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const properties = await propertyService.getAdminProperties();
+
+    res.status(200).json({
+      success: true,
+      count: properties.length,
+      data: properties
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch all properties'
+    });
+  }
+};
+
 export const updateProperty = async (req: Request, res: Response): Promise<void> => {
   try {
     const userId = (req as any).user?.id;
@@ -604,7 +621,13 @@ export const updateProperty = async (req: Request, res: Response): Promise<void>
     }
 
     const propertyData = buildPropertyPayload(req.body);
-    const updatedProperty = await propertyService.updateProperty(propertyId, userId, propertyData);
+    const isAdmin = (req as any).user?.userType?.trim().toLowerCase() === 'admin';
+    const updatedProperty = await propertyService.updateProperty(
+      propertyId,
+      userId,
+      propertyData,
+      isAdmin
+    );
 
     res.status(200).json({
       success: true,
@@ -655,7 +678,8 @@ export const deleteProperty = async (req: Request, res: Response): Promise<void>
       return;
     }
 
-    const property = await propertyService.deleteProperty(propertyId, userId);
+    const isAdmin = (req as any).user?.userType?.trim().toLowerCase() === 'admin';
+    const property = await propertyService.deleteProperty(propertyId, userId, isAdmin);
 
     res.status(200).json({
       success: true,
