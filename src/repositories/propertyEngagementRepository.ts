@@ -3,11 +3,20 @@ import { PropertyFavourite } from '../entities/PropertyFavourite.js';
 import { PropertyView } from '../entities/PropertyView.js';
 import { Notification } from '../entities/Notification.js';
 
+export type PropertyLead = {
+  name: string;
+  email: string | null;
+  phone: string | null;
+  lastInteractionAt: Date;
+  type: string;
+};
+
 export type PropertyEngagementStats = {
   viewCount: number;
   uniqueViewCount: number;
   favouriteCount: number;
   leadCount: number;
+  leads: PropertyLead[];
 };
 
 const getUtcDate = (): string => new Date().toISOString().slice(0, 10);
@@ -71,11 +80,37 @@ export const getPropertyEngagementStats = async (
     .andWhere('(notification.actor_email IS NOT NULL OR notification.actor_phone IS NOT NULL)')
     .getRawOne<{ leadCount: string }>();
 
+  const leadNotifications = await notificationRepository.find({
+    where: { propertyId },
+    order: { createdAt: 'DESC' }
+  });
+  const leadsByContact = new Map<string, PropertyLead>();
+  for (const notification of leadNotifications) {
+    if (
+      !['property_view', 'property_fit_match', 'property_favourite'].includes(notification.type) ||
+      (!notification.actorEmail && !notification.actorPhone)
+    ) {
+      continue;
+    }
+
+    const key = notification.actorEmail || notification.actorPhone || notification.actorName || notification.id;
+    if (!leadsByContact.has(key)) {
+      leadsByContact.set(key, {
+        name: notification.actorName || 'Property visitor',
+        email: notification.actorEmail,
+        phone: notification.actorPhone,
+        lastInteractionAt: notification.createdAt,
+        type: notification.type
+      });
+    }
+  }
+
   return {
     viewCount: Number(viewStats?.viewCount || 0),
     uniqueViewCount: Number(viewStats?.uniqueViewCount || 0),
     favouriteCount,
-    leadCount: Number(leadStats?.leadCount || 0)
+    leadCount: Number(leadStats?.leadCount || 0),
+    leads: Array.from(leadsByContact.values())
   };
 };
 

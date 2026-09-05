@@ -213,7 +213,9 @@ export const findPropertiesByUserId = async (userId: string): Promise<Property[]
     Object.assign(property, stats.get(property.id) || {
       viewCount: 0,
       uniqueViewCount: 0,
-      favouriteCount: 0
+      favouriteCount: 0,
+      leadCount: 0,
+      leads: []
     })
   );
 };
