@@ -724,8 +724,10 @@ export const searchProperties = async (req: Request, res: Response): Promise<voi
     const propertyType =
       (req.query.propertyType as string | undefined) ??
       (req.query.landType as string | undefined);
+    const page = Math.max(1, Number(req.query.page ?? 1));
+    const limit = Math.min(100, Math.max(1, Number(req.query.limit ?? 10)));
 
-    const filters = { q, type, city, propertyName, propertyType };
+    const filters = { q, type, city, propertyName, propertyType, page, limit };
     const hasFilter = q || type || city || propertyName || propertyType;
 
     if (!hasFilter) {
@@ -736,12 +738,15 @@ export const searchProperties = async (req: Request, res: Response): Promise<voi
       return;
     }
 
-    const properties = await propertyService.searchProperties(filters);
+    const result = await propertyService.searchPropertiesPage(filters);
 
     res.status(200).json({
       success: true,
-      count: properties.length,
-      data: properties
+      count: result.total,
+      page: result.page,
+      limit: result.limit,
+      totalPages: result.totalPages,
+      data: result.items
     });
   } catch (error: unknown) {
     if (error instanceof AppError) {

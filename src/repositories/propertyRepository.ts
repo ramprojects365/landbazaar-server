@@ -316,17 +316,24 @@ export interface SearchFilters {
   city?: string;
   propertyName?: string;
   propertyType?: string;
+  page?: number;
+  limit?: number;
 }
 
-export const searchProperties = async (filters: SearchFilters): Promise<Property[]> => {
+export const searchPropertiesPage = async (
+  filters: SearchFilters
+): Promise<{ items: Property[]; total: number; page: number; limit: number; totalPages: number }> => {
   const propertyRepository = AppDataSource.getRepository(Property);
+  const page = Math.max(1, Number(filters.page ?? 1));
+  const limit = Math.min(100, Math.max(1, Number(filters.limit ?? 10)));
+  const offset = (page - 1) * limit;
+
   const queryBuilder = propertyRepository.createQueryBuilder('property');
   queryBuilder.leftJoinAndSelect('property.user', 'user');
 
   const conditions: string[] = [];
   const params: Record<string, unknown> = {};
 
-  // Default to active status
   conditions.push('property.status = :status');
   params.status = 'active';
 
@@ -344,8 +351,75 @@ export const searchProperties = async (filters: SearchFilters): Promise<Property
   }
 
   if (filters.type) {
-    if(filters.type == "buy") {
-      filters.type = "sale";
+    if (filters.type === 'buy') {
+      filters.type = 'sale';
+    }
+    conditions.push('LOWER(property.listingType) = LOWER(:type)');
+    params.type = filters.type;
+  }
+
+  if (filters.city) {
+    conditions.push('property.cityName ILIKE :city');
+    params.city = `%${filters.city}%`;
+  }
+
+  if (filters.propertyName) {
+    conditions.push('(property.title ILIKE :propertyName OR property.propertyName ILIKE :propertyName)');
+    params.propertyName = `%${filters.propertyName}%`;
+  }
+
+  if (filters.propertyType) {
+    conditions.push('property.propertyType ILIKE :propertyType');
+    params.propertyType = `%${filters.propertyType}%`;
+  }
+
+  if (conditions.length > 0) {
+    queryBuilder.where(conditions.join(' AND '), params);
+  }
+
+  const total = await queryBuilder.clone().getCount();
+  queryBuilder.orderBy('property.createdAt', 'DESC');
+  queryBuilder.skip(offset).take(limit);
+
+  const items = await queryBuilder.getMany();
+  const totalPages = total === 0 ? 0 : Math.ceil(total / limit);
+
+  return {
+    items,
+    total,
+    page,
+    limit,
+    totalPages
+  };
+};
+
+export const searchProperties = async (filters: SearchFilters): Promise<Property[]> => {
+  const propertyRepository = AppDataSource.getRepository(Property);
+  const queryBuilder = propertyRepository.createQueryBuilder('property');
+  queryBuilder.leftJoinAndSelect('property.user', 'user');
+
+  const conditions: string[] = [];
+  const params: Record<string, unknown> = {};
+
+  conditions.push('property.status = :status');
+  params.status = 'active';
+
+  if (filters.q) {
+    conditions.push(
+      '(property.title ILIKE :q OR ' +
+      'property.description ILIKE :q OR ' +
+      'property.cityName ILIKE :q OR ' +
+      'property.streetName ILIKE :q OR ' +
+      'property.landmark ILIKE :q OR ' +
+      'property.propertyName ILIKE :q OR ' +
+      'property.state ILIKE :q)'
+    );
+    params.q = `%${filters.q}%`;
+  }
+
+  if (filters.type) {
+    if (filters.type === 'buy') {
+      filters.type = 'sale';
     }
     conditions.push('LOWER(property.listingType) = LOWER(:type)');
     params.type = filters.type;

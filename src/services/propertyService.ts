@@ -260,6 +260,23 @@ export const deleteProperty = async (
   return updated;
 };
 
+export const searchPropertiesPage = async (filters: {
+  q?: string;
+  type?: string;
+  city?: string;
+  propertyName?: string;
+  propertyType?: string;
+  page?: number;
+  limit?: number;
+}): Promise<{ items: Property[]; total: number; page: number; limit: number; totalPages: number }> => {
+  const hasFilter = filters.q || filters.type || filters.city || filters.propertyName || filters.propertyType;
+  if (!hasFilter) {
+    throw new AppError('At least one search filter is required', 400);
+  }
+
+  return await propertyRepository.searchPropertiesPage(filters);
+};
+
 export const searchProperties = async (filters: { q?: string; type?: string; city?: string; propertyName?: string; propertyType?: string }): Promise<Property[]> => {
   const hasFilter = filters.q || filters.type || filters.city || filters.propertyName || filters.propertyType;
   if (!hasFilter) {
