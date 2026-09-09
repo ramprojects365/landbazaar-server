@@ -153,8 +153,38 @@ export const getUserProperties = async (userId: string): Promise<Property[]> => 
   return await propertyRepository.findPropertiesByUserId(userId);
 };
 
-export const getAdminProperties = async (): Promise<Property[]> => {
-  return await propertyRepository.findAllProperties({ status: 'active' });
+export const getAdminProperties = async (filters?: { page?: number; limit?: number; search?: string }): Promise<{ items: Property[]; total: number; page: number; limit: number; totalPages: number }> => {
+  const page = Math.max(1, Number(filters?.page ?? 1));
+  const limit = Math.min(100, Math.max(1, Number(filters?.limit ?? 10)));
+  const search = filters?.search?.trim() ?? '';
+
+  const result = await propertyRepository.findAllPropertiesPage({
+    status: 'active',
+    page,
+    limit,
+    search
+  });
+
+  const stats = await propertyEngagementRepository.getPropertyEngagementStatsForProperties(
+    result.items.map((property) => property.id)
+  );
+
+  const itemsWithStats = result.items.map((property) => {
+    const engagement = stats.get(property.id) || {
+      viewCount: 0,
+      uniqueViewCount: 0,
+      favouriteCount: 0,
+      leadCount: 0,
+      leads: []
+    };
+
+    return Object.assign(property, engagement);
+  });
+
+  return {
+    ...result,
+    items: itemsWithStats
+  };
 };
 
 export const recordPropertyView = async (input: {

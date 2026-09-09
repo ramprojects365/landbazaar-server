@@ -138,6 +138,7 @@ type PropertyBodyField = keyof Pick<
   | 'pincode'
   | 'landmark'
   | 'location'
+  | 'googleLocationPath'
   | 'furnishing'
   | 'availability'
   | 'floorLevel'
@@ -198,6 +199,7 @@ const propertyBodyKeys: Record<PropertyBodyField, string[]> = {
   pincode: ['pincode'],
   landmark: ['landmark'],
   location: ['location'],
+  googleLocationPath: ['googleLocationPath', 'google_location_path'],
   furnishing: ['furnishing'],
   availability: ['availability'],
   floorLevel: ['floorLevel', 'floor_level'],
@@ -258,7 +260,7 @@ const getBodyValue = (
   return undefined;
 };
 
-const buildPropertyPayload = (
+export const buildPropertyPayload = (
   body: Record<string, unknown>,
   options: { includeDefaults?: boolean; userId?: string } = {}
 ): Partial<Property> => {
@@ -276,6 +278,7 @@ const buildPropertyPayload = (
     'pincode',
     'landmark',
     'location',
+    'googleLocationPath',
     'areaUnit',
     'furnishing',
     'availability',
@@ -576,12 +579,23 @@ export const getUserProperties = async (req: Request, res: Response): Promise<vo
 
 export const getAdminProperties = async (req: Request, res: Response): Promise<void> => {
   try {
-    const properties = await propertyService.getAdminProperties();
+    const page = Math.max(1, Number(req.query.page ?? 1));
+    const limit = Math.min(100, Math.max(1, Number(req.query.limit ?? 10)));
+    const search = typeof req.query.search === 'string' ? req.query.search.trim() : '';
+
+    const result = await propertyService.getAdminProperties({
+      page,
+      limit,
+      search
+    });
 
     res.status(200).json({
       success: true,
-      count: properties.length,
-      data: properties
+      count: result.total,
+      page: result.page,
+      limit: result.limit,
+      totalPages: result.totalPages,
+      data: result.items
     });
   } catch (error: any) {
     res.status(500).json({

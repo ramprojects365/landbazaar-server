@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS properties (
   pincode VARCHAR(20),
   landmark VARCHAR(255),
   location TEXT,
+  google_location_path TEXT,
   latitude DOUBLE PRECISION,
   longitude DOUBLE PRECISION,
 

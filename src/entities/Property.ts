@@ -118,6 +118,13 @@ export class Property {
   location?: string;
 
   @Column({
+    type: 'text',
+    nullable: true,
+    name: 'google_location_path'
+  })
+  googleLocationPath?: string;
+
+  @Column({
     type: 'double precision',
     nullable: true
   })

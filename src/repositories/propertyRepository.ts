@@ -14,6 +14,10 @@ export interface PropertyFilters {
   state?: string;
   status?: string | null;
   userId?: string;
+  search?: string;
+  page?: number;
+  limit?: number;
+  offset?: number;
   minPrice?: number;
   maxPrice?: number;
   minBedrooms?: number;
@@ -81,7 +85,6 @@ export const findAllProperties = async (filters?: PropertyFilters): Promise<Prop
   const queryBuilder = propertyRepository.createQueryBuilder('property');
   queryBuilder.leftJoinAndSelect('property.user', 'user');
 
-  // Default to active status if not specified
   const statusFilter = filters?.status !== undefined ? filters.status : 'active';
   if (statusFilter) {
     queryBuilder.andWhere('property.status = :status', { status: statusFilter });
@@ -114,6 +117,14 @@ export const findAllProperties = async (filters?: PropertyFilters): Promise<Prop
       queryBuilder.andWhere('property.availability = :availability', {
         availability: filters.availability
       });
+    }
+
+    if (filters.search && filters.search.trim()) {
+      const searchValue = `%${filters.search.trim()}%`;
+      queryBuilder.andWhere(
+        '(property.title ILIKE :search OR property.propertyName ILIKE :search OR property.streetName ILIKE :search OR property.cityName ILIKE :search OR property.state ILIKE :search OR property.location ILIKE :search OR property.landmark ILIKE :search)',
+        { search: searchValue }
+      );
     }
 
     if (filters.cityName) {
@@ -197,6 +208,69 @@ export const findAllProperties = async (filters?: PropertyFilters): Promise<Prop
   queryBuilder.orderBy('property.createdAt', 'DESC');
 
   return await queryBuilder.getMany();
+};
+
+export const findAllPropertiesPage = async (
+  filters: PropertyFilters = {}
+): Promise<{ items: Property[]; total: number; page: number; limit: number; totalPages: number }> => {
+  const propertyRepository = AppDataSource.getRepository(Property);
+  const page = Math.max(1, Number(filters.page ?? 1));
+  const limit = Math.min(100, Math.max(1, Number(filters.limit ?? 10)));
+  const offset = Math.max(0, Number(filters.offset ?? (page - 1) * limit));
+
+  const queryBuilder = propertyRepository.createQueryBuilder('property');
+  queryBuilder.leftJoinAndSelect('property.user', 'user');
+
+  const statusFilter = filters.status !== undefined ? filters.status : 'active';
+  if (statusFilter) {
+    queryBuilder.andWhere('property.status = :status', { status: statusFilter });
+  }
+
+  if (filters.listingType) {
+    queryBuilder.andWhere('property.listingType = :listingType', {
+      listingType: filters.listingType
+    });
+  }
+
+  if (filters.propertyType) {
+    queryBuilder.andWhere('property.propertyType = :propertyType', {
+      propertyType: filters.propertyType
+    });
+  }
+
+  if (filters.search && filters.search.trim()) {
+    const searchValue = `%${filters.search.trim()}%`;
+    queryBuilder.andWhere(
+      '(property.title ILIKE :search OR property.propertyName ILIKE :search OR property.streetName ILIKE :search OR property.cityName ILIKE :search OR property.state ILIKE :search OR property.location ILIKE :search OR property.landmark ILIKE :search)',
+      { search: searchValue }
+    );
+  }
+
+  if (filters.cityName) {
+    queryBuilder.andWhere(
+      '(property.cityName ILIKE :location OR property.state ILIKE :location OR property.streetName ILIKE :location OR property.landmark ILIKE :location OR property.propertyName ILIKE :location)',
+      { location: `%${filters.cityName}%` }
+    );
+  }
+
+  if (filters.userId) {
+    queryBuilder.andWhere('property.userId = :userId', { userId: filters.userId });
+  }
+
+  const total = await queryBuilder.clone().getCount();
+  queryBuilder.orderBy('property.createdAt', 'DESC');
+  queryBuilder.skip(offset).take(limit);
+
+  const items = await queryBuilder.getMany();
+  const totalPages = total === 0 ? 0 : Math.ceil(total / limit);
+
+  return {
+    items,
+    total,
+    page,
+    limit,
+    totalPages
+  };
 };
 
 export const findPropertiesByUserId = async (userId: string): Promise<Property[]> => {
