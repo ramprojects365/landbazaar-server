@@ -1,6 +1,6 @@
 import express from 'express';
 import { body } from 'express-validator';
-import { register, login, getProfile, updateProfile, changePassword, forgotPassword, resetPassword, verifyEmail, verifyOTP } from '../controllers/authController.js';
+import { register, login, googleLogin, getProfile, updateProfile, changePassword, forgotPassword, resetPassword, verifyEmail, verifyOTP } from '../controllers/authController.js';
 import { authenticateToken } from '../middleware/auth.js';
 
 const router = express.Router();
@@ -37,6 +37,8 @@ router.post(
   ],
   login
 );
+
+router.post('/google', googleLogin);
 
 router.post('/verify-email', verifyEmail);
 

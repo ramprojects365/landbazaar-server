@@ -102,6 +102,24 @@ export const login = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
+export const googleLogin = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const result = await authService.loginWithGoogle(req.body?.credential);
+    res.status(200).json({
+      success: true,
+      message: 'Google login successful',
+      data: result
+    });
+  } catch (error: any) {
+    if (error.status) {
+      res.status(error.status).json({ success: false, message: error.message });
+      return;
+    }
+    console.error('Google login error:', error);
+    res.status(401).json({ success: false, message: 'Google login failed' });
+  }
+};
+
 export const getProfile = async (req: Request, res: Response): Promise<void> => {
   try {
     const user = await authService.getUserProfile(req.user!.id);

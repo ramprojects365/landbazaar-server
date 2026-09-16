@@ -46,7 +46,8 @@ export const createUser = async (userData: UserRepositoryData): Promise<User> =>
     verificationToken: userData.verificationToken,
     verificationExpiry: userData.verificationExpiry,
     emailVerified: false,
-    otp: userData.otp
+    otp: userData.otp,
+    authProvider: 'local'
   };
 
   const user = repository.create(userDataPartial);
@@ -61,6 +62,53 @@ export const findUserByEmail = async (email: string): Promise<User | null> => {
     where: { email },
     select: ['id', 'email', 'passwordHash', 'emailVerified', 'username', 'phoneNumber', 'userType', 'renNumber', 'renStatus', 'profileImage', 'fullName', 'bio', 'companyName', 'icPassport', 'designation', 'experienceYears', 'createdAt', 'updatedAt']
   });
+};
+
+export const findUserByGoogleId = async (googleId: string): Promise<User | null> => {
+  const repository = getUserRepository();
+  return await repository.findOne({ where: { googleId } });
+};
+
+export const createGoogleUser = async (userData: {
+  username: string;
+  email: string;
+  fullName: string;
+  profileImage?: string;
+  googleId: string;
+  passwordHash: string;
+}): Promise<User> => {
+  const repository = getUserRepository();
+  const user = repository.create({
+    username: userData.username,
+    email: userData.email,
+    fullName: userData.fullName,
+    profileImage: userData.profileImage || null,
+    googleId: userData.googleId,
+    authProvider: 'google',
+    passwordHash: userData.passwordHash,
+    emailVerified: true,
+    renStatus: 'not_verified'
+  });
+  return await repository.save(user);
+};
+
+export const updateGoogleProfile = async (
+  userId: string,
+  updates: { googleId: string; fullName?: string; profileImage?: string }
+): Promise<User> => {
+  const repository = getUserRepository();
+  const updateData: Partial<User> = {
+    googleId: updates.googleId,
+    authProvider: 'google',
+    emailVerified: true,
+    lastLogin: new Date()
+  };
+  if (updates.fullName) updateData.fullName = updates.fullName;
+  if (updates.profileImage) updateData.profileImage = updates.profileImage;
+  await repository.update({ id: userId }, updateData);
+  const user = await repository.findOne({ where: { id: userId } });
+  if (!user) throw new Error('User not found after Google profile update');
+  return user;
 };
 
 export const findUserById = async (id: string): Promise<User | null> => {

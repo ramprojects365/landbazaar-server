@@ -1,6 +1,7 @@
 import bcrypt from 'bcrypt';
 import jwt, { SignOptions } from 'jsonwebtoken';
 import crypto from 'crypto';
+import { OAuth2Client } from 'google-auth-library';
 import * as userRepository from '../repositories/userRepository.js';
 import { RegistrationData, LoginCredentials, AuthToken, UserProfile, UpdateProfileData } from '../types/user.js';
 import { generateOTP } from '../utils/otp.js';
@@ -21,6 +22,7 @@ if (!process.env.JWT_SECRET) {
 }
 
 const JWT_SECRET: string = process.env.JWT_SECRET;
+const googleClient = new OAuth2Client();
 
 interface ServiceError {
   status: number;
@@ -94,6 +96,79 @@ const withRenVerification = <T extends { renStatus?: string | null }>(user: T) =
     renVerified,
     renStatusLabel: renVerified ? 'Verified' : 'Not verified',
     renStatusIcon: renVerified ? 'badge-check' : 'badge-alert'
+  };
+};
+
+export const loginWithGoogle = async (credential: string): Promise<AuthToken> => {
+  const clientId = process.env.GOOGLE_CLIENT_ID;
+  if (!clientId) {
+    throw { status: 503, message: 'Google login is not configured on the server' } as ServiceError;
+  }
+
+  if (!credential?.trim()) {
+    throw { status: 400, message: 'Google credential is required' } as ServiceError;
+  }
+
+  const ticket = await googleClient.verifyIdToken({
+    idToken: credential,
+    audience: clientId
+  });
+  const payload = ticket.getPayload();
+  const email = payload?.email?.trim().toLowerCase();
+  const googleId = payload?.sub;
+
+  if (!email || !googleId || payload.email_verified !== true) {
+    throw { status: 401, message: 'Google account could not be verified' } as ServiceError;
+  }
+
+  const fullName = payload.name?.trim() || email.split('@')[0];
+  const profileImage = payload.picture;
+  let user = await userRepository.findUserByGoogleId(googleId);
+
+  if (!user) {
+    user = await userRepository.findUserByEmail(email);
+  }
+
+  if (user) {
+    user = await userRepository.updateGoogleProfile(user.id, {
+      googleId,
+      fullName: user.fullName || fullName,
+      profileImage: user.profileImage || profileImage
+    });
+  } else {
+    const passwordHash = await bcrypt.hash(crypto.randomBytes(32).toString('hex'), BCRYPT_SALT_ROUNDS);
+    user = await userRepository.createGoogleUser({
+      username: generateUsernameFromEmail(email),
+      email,
+      fullName,
+      profileImage,
+      googleId,
+      passwordHash
+    });
+  }
+
+  await userRepository.updateLastLogin(user.id);
+  return {
+    token: generateJWTToken(user.id, user.email),
+    user: withRenVerification({
+      id: user.id,
+      username: user.username,
+      email: user.email,
+      phoneNumber: user.phoneNumber,
+      userType: user.userType,
+      renNumber: user.renNumber,
+      renStatus: user.renStatus,
+      profileImage: user.profileImage,
+      fullName: user.fullName,
+      bio: user.bio,
+      companyName: user.companyName,
+      icPassport: user.icPassport,
+      designation: user.designation,
+      experienceYears: user.experienceYears,
+      emailVerified: user.emailVerified,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt
+    })
   };
 };
 

@@ -73,6 +73,7 @@ Set these in backend service:
 - NODE_ENV=production
 - JWT_SECRET=your-long-random-secret
 - JWT_EXPIRY=7d
+- GOOGLE_CLIENT_ID=your-google-web-client-id.apps.googleusercontent.com
 - PUBLIC_WEB_URL=https://www.dekholand.com
 - PUBLIC_API_URL=https://your-railway-api-domain
 
@@ -93,6 +94,10 @@ Optional services:
 - AWS_S3_BUCKET
 - AWS_ENDPOINT
 - AWS_PUBLIC_URL_BASE
+
+Set this in the production frontend service as well:
+- NEXT_PUBLIC_GOOGLE_CLIENT_ID=your-google-web-client-id.apps.googleusercontent.com
+- NEXT_PUBLIC_API_URL=https://your-railway-api-domain/api
 
 ## 6) Railway migration compatibility
 

@@ -8,6 +8,8 @@ CREATE TABLE IF NOT EXISTS users (
   ren_number VARCHAR(50),
   ren_status VARCHAR(30) DEFAULT 'not_verified',
   profile_image VARCHAR(500),
+  google_id VARCHAR(255) UNIQUE,
+  auth_provider VARCHAR(30) DEFAULT 'local',
   full_name VARCHAR(100),
   bio TEXT,
   company_name VARCHAR(100),
@@ -28,6 +30,7 @@ CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);
 CREATE INDEX IF NOT EXISTS idx_users_phone_number ON users(phone_number);
 CREATE INDEX IF NOT EXISTS idx_users_verification_token ON users(verification_token);
+CREATE INDEX IF NOT EXISTS idx_users_google_id ON users(google_id);
 
 -- Create function to update updated_at timestamp
 CREATE OR REPLACE FUNCTION update_updated_at_column()

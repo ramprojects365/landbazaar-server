@@ -26,6 +26,12 @@ export class User {
   @Column({ type: 'varchar', length: 500, nullable: true, name: 'profile_image' })
   profileImage: string | null;
 
+  @Column({ type: 'varchar', length: 255, nullable: true, unique: true, name: 'google_id' })
+  googleId: string | null;
+
+  @Column({ type: 'varchar', length: 30, default: 'local', name: 'auth_provider' })
+  authProvider: string;
+
   @Column({ type: 'varchar', length: 100, nullable: true, name: 'full_name' })
   fullName: string | null;
 

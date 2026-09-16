@@ -87,7 +87,7 @@ export const sendOtpEmail = async (
   otp: string
 ): Promise<void> => {
   const from =
-    process.env.MAIL_FROM || "Dekho Land <support@propertyla.com.my>";
+    process.env.MAIL_FROM || "Dekho Land <support@dekholand.com>";
 
   await sendEmail({
     from,
@@ -182,7 +182,7 @@ export const sendPropertyFitListEmail = async (
   name: string,
   properties: PropertyFitEmailItem[]
 ): Promise<void> => {
-  const from = process.env.MAIL_FROM || 'Dekho Land <support@propertyla.com.my>';
+  const from = process.env.MAIL_FROM || 'Dekho Land <support@dekholand.com>';
   const propertyText = properties.length
     ? properties
       .map((property) => `- ${property.title} | ${formatPrice(property.price)} | ${property.location || 'Location pending'}${property.url ? ` | ${property.url}` : ''}`)
@@ -259,7 +259,7 @@ export const sendPasswordResetEmail = async (params: {
   username: string;
   token: string;
 }): Promise<void> => {
-  const from = process.env.MAIL_FROM || 'Dekho Land <support@propertyla.com.my>';
+  const from = process.env.MAIL_FROM || 'Dekho Land <support@dekholand.com>';
   const resetUrl = getClientResetPasswordUrl(params.token);
 
   await sendEmail({
@@ -318,7 +318,7 @@ export const sendPropertyFitLeadPasswordEmail = async (params: {
   name: string;
   password: string;
 }): Promise<void> => {
-  const from = process.env.MAIL_FROM || 'Dekho Land <support@propertyla.com.my>';
+  const from = process.env.MAIL_FROM || 'Dekho Land <support@dekholand.com>';
   const loginUrl = getClientLoginUrl();
 
   await sendEmail({
@@ -369,7 +369,7 @@ export const sendPropertyFitWelcomeBackEmail = async (params: {
   to: string;
   name: string;
 }): Promise<void> => {
-  const from = process.env.MAIL_FROM || 'Dekho Land <support@propertyla.com.my>';
+  const from = process.env.MAIL_FROM || 'Dekho Land <support@dekholand.com>';
   const loginUrl = getClientLoginUrl();
 
   await sendEmail({
@@ -390,7 +390,7 @@ export const sendPropertyViewNotificationEmail = async (params: {
   propertyTitle: string;
   propertyUrl?: string;
 }): Promise<void> => {
-  const from = process.env.MAIL_FROM || 'Dekho Land <support@propertyla.com.my>';
+  const from = process.env.MAIL_FROM || 'Dekho Land <support@dekholand.com>';
   const leadName = params.leadName || 'A Dekho Land visitor';
 
   await sendEmail({
@@ -414,7 +414,7 @@ export const sendPropertyViewNotificationEmail = async (params: {
     propertyTitle: string;
     propertyUrl?: string;
   }): Promise<void> => {
-    const from = process.env.MAIL_FROM || 'Dekho Land <support@propertyla.com.my>';
+    const from = process.env.MAIL_FROM || 'Dekho Land <support@dekholand.com>';
     const safeBuyerName = escapeHtml(params.buyerName);
     const safePropertyTitle = escapeHtml(params.propertyTitle);
     const safeBuyerEmail = escapeHtml(params.buyerEmail || 'Not provided');
@@ -444,8 +444,8 @@ export const sendContactMessageEmail = async (params: {
   message: string;
   source?: string;
 }): Promise<void> => {
-  const from = process.env.MAIL_FROM || 'Dekho Land <support@propertyla.com.my>';
-  const to = process.env.CONTACT_TO_EMAIL || process.env.MAIL_TO || 'support@propertyla.com.my';
+  const from = process.env.MAIL_FROM || 'Dekho Land <support@dekholand.com>';
+  const to = process.env.CONTACT_TO_EMAIL || process.env.MAIL_TO || 'support@dekholand.com';
   const subject = params.subject?.trim() || 'New Dekho Land contact message';
   const safe = {
     name: escapeHtml(params.name),
