@@ -194,7 +194,6 @@ export const registerUser = async (registrationData: RegistrationData) => {
   const verificationExpiry = calculateVerificationExpiry();
   const otp = generateOTP();
 
-
   const newUser = await userRepository.createUser({
     username,
     email,
@@ -207,6 +206,36 @@ export const registerUser = async (registrationData: RegistrationData) => {
     verificationExpiry,
     otp
   });
+
+  const isLocalAutoLoginMode = process.env.NODE_ENV !== 'production' || !process.env.RESEND_API_KEY?.trim();
+
+  if (isLocalAutoLoginMode) {
+    const verifiedUser = await userRepository.updateUserEmailVerification(newUser.id);
+    const token = generateJWTToken(verifiedUser.id, verifiedUser.email);
+
+    return {
+      token,
+      user: withRenVerification({
+        id: verifiedUser.id,
+        username: verifiedUser.username,
+        email: verifiedUser.email,
+        phoneNumber: verifiedUser.phoneNumber,
+        userType: verifiedUser.userType,
+        renNumber: verifiedUser.renNumber,
+        renStatus: verifiedUser.renStatus,
+        profileImage: verifiedUser.profileImage,
+        fullName: verifiedUser.fullName,
+        bio: verifiedUser.bio,
+        companyName: verifiedUser.companyName,
+        icPassport: verifiedUser.icPassport,
+        designation: verifiedUser.designation,
+        experienceYears: verifiedUser.experienceYears,
+        emailVerified: verifiedUser.emailVerified,
+        createdAt: verifiedUser.createdAt,
+        updatedAt: verifiedUser.updatedAt
+      })
+    };
+  }
 
   try {
     await sendOtpEmail(newUser.email, newUser.username, otp);
