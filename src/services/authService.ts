@@ -207,9 +207,9 @@ export const registerUser = async (registrationData: RegistrationData) => {
     otp
   });
 
-  const isLocalAutoLoginMode = process.env.NODE_ENV !== 'production' || !process.env.RESEND_API_KEY?.trim();
+  const shouldAutoVerifyUser = !process.env.RESEND_API_KEY?.trim();
 
-  if (isLocalAutoLoginMode) {
+  if (shouldAutoVerifyUser) {
     const verifiedUser = await userRepository.updateUserEmailVerification(newUser.id);
     const token = generateJWTToken(verifiedUser.id, verifiedUser.email);
 

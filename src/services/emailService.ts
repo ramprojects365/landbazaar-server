@@ -1,7 +1,6 @@
 import { Resend } from "resend";
 const resendApiKey = process.env.RESEND_API_KEY?.trim();
 const resend = resendApiKey ? new Resend(resendApiKey) : null;
-const isLocalDevelopment = process.env.NODE_ENV !== 'production';
 let warnedMissingResendKey = false;
 
 const sendEmail = async (
@@ -11,20 +10,17 @@ const sendEmail = async (
   if (!resend || !process.env.RESEND_API_KEY?.trim()) {
     const message = 'Email delivery is not configured. Set RESEND_API_KEY in the server .env file and use a verified MAIL_FROM address before sending OTP or reset emails.';
 
-    if (isLocalDevelopment) {
-      console.warn(`[LOCAL DEV EMAIL] ${label} email skipped.`, {
-        to: payload.to,
-        subject: payload.subject,
-        message
-      });
-      return;
-    }
+    console.warn(`[EMAIL FALLBACK] ${label} email skipped.`, {
+      to: payload.to,
+      subject: payload.subject,
+      message
+    });
 
     if (!warnedMissingResendKey) {
-      console.error(message);
+      console.warn(message);
       warnedMissingResendKey = true;
     }
-    throw new Error(message);
+    return;
   }
 
   const result = await resend.emails.send(payload);
