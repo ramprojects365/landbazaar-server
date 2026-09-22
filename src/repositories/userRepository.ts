@@ -2,7 +2,6 @@ import { AppDataSource } from '../config/database.js';
 import { User } from '../entities/User.js';
 import { UserRepositoryData, ExistingUserCheck } from '../types/user.js';
 import { Repository, DeepPartial } from 'typeorm';
-import { isStaticOTP, isStaticOTPAllowedForEmail } from '../utils/otp.js';
 
 let userRepository: Repository<User>;
 
@@ -23,24 +22,12 @@ export const findValidOTP = async (userId: string, otp: string): Promise<boolean
 
   const user = await repository.findOne({
     where: {
-      id: userId
-    }
-  });
-
-  if (!user) return false;
-
-  if (isStaticOTPAllowedForEmail(user.email) && isStaticOTP(normalizedOtp)) {
-    return true;
-  }
-
-  const matchingUser = await repository.findOne({
-    where: {
       id: userId,
       otp: normalizedOtp
     }
   });
 
-  if (!matchingUser) return false;
+  if (!user) return false;
 
   return true;
 };
