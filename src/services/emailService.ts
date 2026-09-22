@@ -10,17 +10,11 @@ const sendEmail = async (
   if (!resend || !process.env.RESEND_API_KEY?.trim()) {
     const message = 'Email delivery is not configured. Set RESEND_API_KEY in the server .env file and use a verified MAIL_FROM address before sending OTP or reset emails.';
 
-    console.warn(`[EMAIL FALLBACK] ${label} email skipped.`, {
-      to: payload.to,
-      subject: payload.subject,
-      message
-    });
-
     if (!warnedMissingResendKey) {
-      console.warn(message);
+      console.error(message);
       warnedMissingResendKey = true;
     }
-    return;
+    throw new Error(message);
   }
 
   const result = await resend.emails.send(payload);
