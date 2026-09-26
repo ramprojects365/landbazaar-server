@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import * as propertyService from '../services/propertyService.js';
 import * as propertyFitService from '../services/propertyFitService.js';
 import * as propertyEngagementService from '../services/propertyEngagementService.js';
-import { Property, PropertyDocument, PropertyImage } from '../entities/Property.js';
+import { Property, PropertyDocument, PropertyImage, PropertyVideo } from '../entities/Property.js';
 import { AppError } from '../utils/errors.js';
 import { parseIndianPriceValue } from '../utils/priceParsing.js';
 
@@ -97,6 +97,12 @@ const normalizeImageItem = (value: unknown, index: number): string | PropertyIma
     ? image.displayPlace.trim()
     : customPlaceName || category;
 
+  const isVideo =
+    image.type === 'video' ||
+    image.mediaType === 'video' ||
+    /\.(mp4|webm|mov|m4v|ogg)$/i.test(rawUrl.trim());
+  const type = isVideo ? 'video' : 'image';
+
   return {
     url: rawUrl.trim(),
     fileName: typeof image.fileName === 'string' ? image.fileName : undefined,
@@ -105,7 +111,32 @@ const normalizeImageItem = (value: unknown, index: number): string | PropertyIma
     customPlaceName,
     displayPlace,
     caption: typeof image.caption === 'string' ? image.caption.trim() : displayPlace,
-    isCover: parseOptionalBoolean(image.isCover) ?? false
+    isCover: parseOptionalBoolean(image.isCover) ?? false,
+    type,
+    mediaType: type
+  };
+};
+
+const normalizeVideoItem = (value: unknown, index: number): PropertyVideo | null => {
+  if (!value) return null;
+  if (typeof value === 'string' && value.trim()) {
+    return {
+      url: value.trim(),
+      order: index + 1
+    };
+  }
+
+  if (typeof value !== 'object' || Array.isArray(value)) return null;
+
+  const item = value as Record<string, unknown>;
+  const rawUrl = item.url ?? item.videoUrl;
+  if (typeof rawUrl !== 'string' || !rawUrl.trim()) return null;
+
+  return {
+    url: rawUrl.trim(),
+    fileName: typeof item.fileName === 'string' ? item.fileName : undefined,
+    caption: typeof item.caption === 'string' ? item.caption.trim() : undefined,
+    order: parseOptionalPositiveInteger(item.order) ?? index + 1
   };
 };
 
@@ -184,6 +215,7 @@ type PropertyBodyField = keyof Pick<
   | 'maintenanceFee'
   | 'sinkingFund'
   | 'bumiLotStatus'
+  | 'videos'
 >;
 
 const propertyBodyKeys: Record<PropertyBodyField, string[]> = {
@@ -207,6 +239,7 @@ const propertyBodyKeys: Record<PropertyBodyField, string[]> = {
   negotiable: ['negotiable'],
   images: ['images'],
   documents: ['documents'],
+  videos: ['videos'],
   amenities: ['amenities'],
   price: ['price'],
   buildupArea: ['buildupArea', 'buildup_area'],
@@ -347,6 +380,13 @@ export const buildPropertyPayload = (
     propertyData.documents = documents
       .map((document) => normalizeDocumentItem(document))
       .filter((document): document is PropertyDocument => document !== null);
+  }
+
+  const videos = getBodyValue(body, 'videos');
+  if (Array.isArray(videos)) {
+    propertyData.videos = videos
+      .map((video, index) => normalizeVideoItem(video, index))
+      .filter((video): video is PropertyVideo => video !== null);
   }
 
   const amenities = normalizeAmenities(getBodyValue(body, 'amenities'));
@@ -966,3 +1006,68 @@ export const getSavedStatus = async (req: Request, res: Response): Promise<void>
     });
   }
 };
+
+export const getUnverifiedProperties = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const page = parseOptionalPositiveInteger(req.query.page) ?? 1;
+    const limit = parseOptionalPositiveInteger(req.query.limit) ?? 10;
+    const search = typeof req.query.search === 'string' ? req.query.search : undefined;
+
+    const result = await propertyService.getUnverifiedPropertiesPage({ page, limit, search });
+
+    res.status(200).json({
+      success: true,
+      message: 'Unverified properties fetched successfully',
+      data: result
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Failed to fetch unverified properties'
+    });
+  }
+};
+
+export const verifyProperty = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const propertyId = req.params.id;
+    const adminUserId = (req as any).user?.id;
+
+    if (!propertyId || !isValidUuid(propertyId)) {
+      res.status(400).json({
+        success: false,
+        message: 'Invalid or missing property ID'
+      });
+      return;
+    }
+
+    if (!adminUserId) {
+      res.status(401).json({
+        success: false,
+        message: 'User not authenticated'
+      });
+      return;
+    }
+
+    const verifiedProperty = await propertyService.verifyProperty(propertyId, adminUserId);
+
+    res.status(200).json({
+      success: true,
+      message: 'Property verified successfully',
+      data: verifiedProperty
+    });
+  } catch (error: any) {
+    if (error instanceof AppError) {
+      res.status(error.status).json({
+        success: false,
+        message: error.message
+      });
+    } else {
+      res.status(500).json({
+        success: false,
+        message: error.message || 'Failed to verify property'
+      });
+    }
+  }
+};
+

@@ -42,19 +42,22 @@ export const uploadSingleImage = async (req: Request, res: Response): Promise<vo
       return;
     }
 
-    const imageUrl = await imageUploadService.uploadToSpaces(file);
+    const media = await imageUploadService.uploadMedia(file);
 
     res.status(200).json({
       success: true,
-      message: 'Image uploaded successfully',
+      message: `${media.mediaType === 'video' ? 'Video' : 'Image'} uploaded successfully`,
       data: {
-        imageUrl
+        imageUrl: media.url,
+        url: media.url,
+        mediaType: media.mediaType,
+        fileName: file.originalname
       }
     });
   } catch (error: any) {
     res.status(error.status || 500).json({
       success: false,
-      message: error.message || 'Failed to upload image'
+      message: error.message || 'Failed to upload media file'
     });
   }
 };

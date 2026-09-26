@@ -14,6 +14,7 @@ router.get('/', propertyController.getAllProperties);
 
 router.get('/my-properties', authenticateToken, propertyController.getUserProperties);
 router.get('/admin/all', authenticateToken, requireAdmin, propertyController.getAdminProperties);
+router.get('/admin/unverified', authenticateToken, requireAdmin, propertyController.getUnverifiedProperties);
 router.get('/favourites', authenticateToken, propertyController.getSavedProperties);
 
 router.get('/:id', propertyController.getPropertyById);
@@ -21,6 +22,8 @@ router.post('/:id/view', optionalAuthenticateToken, propertyController.recordPro
 router.post('/:id/favourite', authenticateToken, propertyController.saveProperty);
 router.delete('/:id/favourite', authenticateToken, propertyController.removeSavedProperty);
 router.get('/:id/favourite-status', authenticateToken, propertyController.getSavedStatus);
+router.patch('/:id/verify', authenticateToken, requireAdmin, propertyController.verifyProperty);
+router.post('/:id/verify', authenticateToken, requireAdmin, propertyController.verifyProperty);
 
 router.post('/', authenticateToken, propertyController.createProperty);
 

@@ -3,6 +3,7 @@ import { Property } from '../entities/Property.js';
 import { PropertyFilters } from '../repositories/propertyRepository.js';
 import { AppError } from '../utils/errors.js';
 import * as propertyEngagementRepository from '../repositories/propertyEngagementRepository.js';
+import { calculateDekhoLandScore } from './dekhoLandScoreService.js';
 
 const validatePropertyData = (data: Partial<Property>): void => {
   if (data.title !== undefined && data.title.trim().length === 0) {
@@ -130,6 +131,13 @@ if (
 }
 */
 
+  propertyData.verified = false;
+  propertyData.verificationStatus = 'pending';
+
+  const scoreResult = calculateDekhoLandScore(propertyData);
+  propertyData.dekhoLandScore = scoreResult.score;
+  propertyData.dekhoLandScoreDetails = scoreResult.details;
+
   const property = await propertyRepository.createProperty(propertyData);
 
   return property;
@@ -227,6 +235,11 @@ export const updateProperty = async (
 
   validatePropertyData(updates);
 
+  const merged = { ...property, ...updates };
+  const scoreResult = calculateDekhoLandScore(merged);
+  updates.dekhoLandScore = scoreResult.score;
+  updates.dekhoLandScoreDetails = scoreResult.details;
+
   const updatedProperty = await propertyRepository.updateProperty(propertyId, updates);
 
   if (!updatedProperty) {
@@ -234,6 +247,44 @@ export const updateProperty = async (
   }
 
   return updatedProperty;
+};
+
+export const getUnverifiedPropertiesPage = async (filters?: {
+  page?: number;
+  limit?: number;
+  search?: string;
+}): Promise<{ items: Property[]; total: number; page: number; limit: number; totalPages: number }> => {
+  return await propertyRepository.findUnverifiedPropertiesPage(filters);
+};
+
+export const verifyProperty = async (propertyId: string, adminUserId: string): Promise<Property> => {
+  const property = await propertyRepository.findPropertyById(propertyId);
+
+  if (!property) {
+    throw new AppError('Property not found', 404);
+  }
+
+  const merged: Partial<Property> = {
+    ...property,
+    verified: true,
+    verificationStatus: 'verified'
+  };
+  const scoreResult = calculateDekhoLandScore(merged);
+
+  const updated = await propertyRepository.updateProperty(propertyId, {
+    verified: true,
+    verificationStatus: 'verified',
+    verifiedAt: new Date(),
+    verifiedBy: adminUserId,
+    dekhoLandScore: scoreResult.score,
+    dekhoLandScoreDetails: scoreResult.details
+  });
+
+  if (!updated) {
+    throw new AppError('Failed to verify property', 500);
+  }
+
+  return updated;
 };
 
 export const deleteProperty = async (

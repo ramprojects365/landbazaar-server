@@ -18,6 +18,15 @@ export interface PropertyImage {
   displayPlace?: string;
   caption?: string;
   isCover?: boolean;
+  type?: 'image' | 'video';
+  mediaType?: 'image' | 'video';
+}
+
+export interface PropertyVideo {
+  url: string;
+  fileName?: string;
+  caption?: string;
+  order?: number;
 }
 
 export interface PropertyDocument {
@@ -468,6 +477,54 @@ export class Property {
     nullable: true
   })
   documents?: PropertyDocument[];
+
+  @Column({
+    type: 'jsonb',
+    nullable: true
+  })
+  videos?: PropertyVideo[];
+
+  @Column({
+    type: 'boolean',
+    default: false
+  })
+  verified!: boolean;
+
+  @Column({
+    type: 'varchar',
+    length: 20,
+    default: 'pending',
+    name: 'verification_status'
+  })
+  verificationStatus!: 'pending' | 'verified' | 'rejected';
+
+  @Column({
+    type: 'timestamp with time zone',
+    nullable: true,
+    name: 'verified_at'
+  })
+  verifiedAt?: Date;
+
+  @Column({
+    type: 'uuid',
+    nullable: true,
+    name: 'verified_by'
+  })
+  verifiedBy?: string;
+
+  @Column({
+    type: 'integer',
+    nullable: true,
+    name: 'dekho_land_score'
+  })
+  dekhoLandScore?: number;
+
+  @Column({
+    type: 'jsonb',
+    nullable: true,
+    name: 'dekho_land_score_details'
+  })
+  dekhoLandScoreDetails?: Record<string, any>;
 
   @Column({
     type: 'varchar',

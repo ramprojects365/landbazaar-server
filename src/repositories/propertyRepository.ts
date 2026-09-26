@@ -305,6 +305,59 @@ export const updateProperty = async (
   return await findPropertyById(id);
 };
 
+export const findUnverifiedPropertiesPage = async (filters: {
+  page?: number;
+  limit?: number;
+  search?: string;
+} = {}): Promise<{ items: Property[]; total: number; page: number; limit: number; totalPages: number }> => {
+  const propertyRepository = AppDataSource.getRepository(Property);
+  const page = Math.max(1, Number(filters.page ?? 1));
+  const limit = Math.min(100, Math.max(1, Number(filters.limit ?? 10)));
+  const offset = (page - 1) * limit;
+
+  const queryBuilder = propertyRepository.createQueryBuilder('property');
+  queryBuilder.leftJoinAndSelect('property.user', 'user');
+  queryBuilder.andWhere('property.status = :status', { status: 'active' });
+  queryBuilder.andWhere('(property.verified = false OR property.verified IS NULL)');
+
+  if (filters.search && filters.search.trim()) {
+    const searchValue = `%${filters.search.trim()}%`;
+    queryBuilder.andWhere(
+      '(property.title ILIKE :search OR property.propertyName ILIKE :search OR property.cityName ILIKE :search OR user.fullName ILIKE :search OR user.email ILIKE :search)',
+      { search: searchValue }
+    );
+  }
+
+  queryBuilder.orderBy('property.createdAt', 'DESC');
+  const total = await queryBuilder.clone().getCount();
+  const items = await queryBuilder.skip(offset).take(limit).getMany();
+
+  return {
+    items,
+    total,
+    page,
+    limit,
+    totalPages: Math.ceil(total / limit)
+  };
+};
+
+export const updatePropertyVerification = async (
+  propertyId: string,
+  verified: boolean,
+  verifiedBy?: string,
+  verificationStatus: 'pending' | 'verified' | 'rejected' = 'verified'
+): Promise<Property | null> => {
+  const propertyRepository = AppDataSource.getRepository(Property);
+  const updates: Partial<Property> = {
+    verified,
+    verificationStatus,
+    verifiedAt: verified ? new Date() : undefined,
+    verifiedBy: verified ? verifiedBy : undefined
+  };
+  await propertyRepository.update(propertyId, updates);
+  return await findPropertyById(propertyId);
+};
+
 export const deleteProperty = async (id: string): Promise<void> => {
   const propertyRepository = AppDataSource.getRepository(Property);
   await propertyRepository.delete(id);
